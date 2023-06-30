@@ -1,0 +1,22 @@
+.navbar {
+    font-family: 'Josefin Sans', sans-serif;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+}
+.navbar-nav .nav-link {
+    color: #001f3f;
+}
+.navbar-nav {
+    flex-direction: row;
+    justify-content: center;
+}
+.navbar-nav .right-links {
+    margin-left: auto;
+}
+.navbar-item {
+    margin-left: 20px; /* Adjust the value to increase or decrease the space */
+}
+.vertical-image {
+  margin-left: auto;
+}
