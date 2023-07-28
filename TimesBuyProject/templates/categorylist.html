@@ -1,0 +1,47 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container-fluid cat-list" style="margin-top: 130px; margin-bottom: 20px;">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="cat-list-title fw-semibold mb-4 text-center">CATEGORIES</h5>
+                <table class="table" style="color:#0B1C39;font-family:'Josefin Sans', sans-serif;">
+                    <thead>
+                        <tr>
+                            <th scope="col">No.</th>
+                            <th scope="col">Image</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category in categories %}
+                        <tr>
+                            <th scope="row">{{ category.id }}</th>
+                            <td>
+                                <img src="{{ category.image.url }}" alt="{{ category.name }} Image" width="100"
+                                    height="100">
+                            </td>
+                            <td >{{ category.name }}</td>
+                            <td>
+                                <a href="{% url 'edit-category' category.id %}"
+                                    class="text-center btn btn-warning btn-sm" >EDIT</a>
+                                {% if category.is_active %}
+                                <a href="{% url 'category-disable' category.id %} "
+                                    class="text-center btn  btn-sm" style="color:white;font-family:'Josefin Sans', sans-serif;background-color:#FF2020;">DISABLE</a>
+                                {% else %}
+                                <a href="{% url 'category-enable' category.id %}"
+                                    class="text-center btn  btn-sm" style="color:white;font-family:'Josefin Sans', sans-serif;background-color:#0B1C39;">ENABLE</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

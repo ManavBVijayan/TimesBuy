@@ -1,0 +1,75 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container-fluid product-detail" style="margin-top: 130px; margin-bottom: 20px;">
+  <div class="container">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="product-detail-title fw-semibold mb-4 text-center">{{ product.name }}</h5>
+        <div class="table-responsive">
+          <table class="table" style="color:#0B1C39;font-family:'Josefin Sans', sans-serif;">
+            <thead>
+              <tr>
+                <th scope="col">No.</th>
+                <th scope="col">Image</th>
+                <th scope="col">Variant ID</th>
+                <th scope="col">Product Name</th>
+                <th scope="col">Model Name</th>
+                <th scope="col">Model Number</th>
+                <th scope="col">Dial Shape</th>
+                <th scope="col">Waterproof</th>
+                <th scope="col">Touch Screen</th>
+                <!-- Add more columns for other variant details -->
+                <th scope="col">Price</th>
+                <th scope="col">Stock</th>
+                <th scope="col">Actions</th> <!-- New column for actions -->
+              </tr>
+            </thead>
+            <tbody>
+              {% for variant in variants %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>
+                  {% with image=variant.images.first %}
+                  {% if image %}
+                  <img src="{{ image.image.url }}" alt="{{ product.name }} Image" width="100" height="100">
+                  {% else %}
+                  <img src="{% static 'placeholder-image.png' %}" alt="{{ product.name }} Image" width="100" height="100">
+                  {% endif %}
+                  {% endwith %}
+                </td>
+                <td>{{ variant.id }}</td>
+                <td>{{ product.name }} - {{ variant.color }}</td>
+                <td>{{ variant.model_name }}</td>
+                <td>{{ variant.model_number }}</td>
+                <td>{{ variant.dial_shape }}</td>
+                <td>{{ variant.water_proof }}</td>
+                <td>{{ variant.touch_screen }}</td>
+                <td>{{ variant.price }}</td>
+                <td>{{ variant.stock }}</td>
+                <td>
+                  {% if variant.is_active %}
+                  <a href="{% url 'disable-variant' variant.product.id variant.id %}" class="btn btn-sm" style="color:white;font-family:'Josefin Sans', sans-serif;background-color:#FF2020;">DISABLE</a>
+                  {% else %}
+                  <a href="{% url 'enable-variant' variant.product.id variant.id %}" class="btn btn-sm" style="color:white;font-family:'Josefin Sans', sans-serif;background-color:#0B1C39;">ENABLE</a>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{% url 'edit-variant' product_id=product.id variant_id=variant.id %}" class="btn btn-sm btn-primary" style="color:white;font-family:'Josefin Sans', sans-serif;">EDIT</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Add variant button -->
+        <div class="text-center">
+          <a href="{% url 'add-variant' product.id %}" class="btn btn-success">Add Variant</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block body %}
+{% load static %}
+
+<div class="bg0 p-t-75 p-b-85">
+  <div class="container" style="margin-top: 130px; margin-bottom: 20px;">
+    <div class="row">
+      <div class="col-md-12 mb-4 d-flex justify-content-center">
+        <div class="card mb-4 bg-secondary-subtle">
+          <div class="card-header d-flex justify-content-center py-3" style="color:white; background-color: #0B1C39; margin-bottom: 10px; font-family: 'Josefin Sans', sans-serif; font-size: 34px; text-align: center;">
+            Add Address
+          </div>
+          <div class="card-body d-flex justify-content-center">
+            <form method="POST" action="{% url 'add_address' %}">
+              {% csrf_token %}
+
+              <!-- 2 column grid layout with text inputs for the first and last names -->
+              <div class="row mb-3">
+                <div class="col">
+                  <div class="form-outline">
+                    <input type="text" id="fname" name="fname" class="form-control" placeholder="First Name" required />
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="form-outline">
+                    <input type="text" id="lname" name="lname" class="form-control" placeholder="Last Name" required />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Text input -->
+              <div class="form-outline " style="height: 90px;">
+                <textarea id="address1" class="form-control" name="address1" placeholder="Address" required></textarea>
+              </div>
+              <div class="form-outline " style="height: 90px;">
+                <textarea id="address2" class="form-control" name="address2" placeholder="Additional Address"></textarea>
+              </div>
+
+              <!-- Text input -->
+              <div class="form-outline mb-4">
+                <input type="text" id="city" class="form-control" name="city" placeholder="City" required />
+              </div>
+
+              <!-- Text input -->
+              <div class="form-outline mb-4">
+                <input type="text" id="state" class="form-control" name="state" placeholder="State" required />
+              </div>
+
+              <!-- Text input -->
+              <div class="form-outline mb-4">
+                <input type="text" id="country" class="form-control" name="country" placeholder="Country" required />
+              </div>
+
+              <!-- Email input -->
+              <div class="form-outline mb-4">
+                <input type="email" id="email" class="form-control" name="email" placeholder="Email" required />
+              </div>
+
+              <!-- Number input -->
+              <div class="form-outline mb-4">
+                <input type="number" id="pincode" class="form-control" name="pincode" placeholder="Postal Code" required />
+              </div>
+
+              <!-- Number input -->
+              <div class="form-outline mb-4">
+                <input type="number" id="phone" class="form-control" name="phone" placeholder="Mobile Number" required />
+              </div>
+              <div class="form-check mb-4">
+                <input class="form-check-input" type="checkbox" id="is_delivery_address" name="is_delivery_address" value="true">
+                <label class="form-check-label" for="is_delivery_address">
+                  Set as Delivery Address
+                </label>
+              </div>
+
+              <!-- Checkbox -->
+              <div class="form-group d-flex justify-content-center mb-2">
+                <button type="submit" class="btn btn-success px-5 py-2">
+                  Submit
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

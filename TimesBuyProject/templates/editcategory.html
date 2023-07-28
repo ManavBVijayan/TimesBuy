@@ -1,0 +1,46 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container-fluid" style="margin-top: 130px; margin-bottom: 20px;">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title fw-semibold mb-4">EDIT CATEGORY</h5>
+                <div class="card">
+                    <div class="card-body">
+                        <form action="{% url 'edit-category' category.id %}" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="id_name" class="form-label">Category name</label>
+                                <input type="text" class="form-control" id="id_name" name="name" value="{{ category.name }}">
+                            </div>
+                            <div class="mb-3" style="padding-top:10px">
+                                <label for="id_image" class="form-label">Image</label>
+                                <input type="file" class="form-control" id="id_image" name="image" onchange="previewImage(event)">
+                                <img id="preview" src="{{ category.image.url }}" alt="Category Image" width="100" height="100" style="padding-top:5px;">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Update</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function previewImage(event) {
+        var input = event.target;
+        var reader = new FileReader();
+
+        reader.onload = function() {
+            var imgElement = document.getElementById('preview');
+            imgElement.src = reader.result;
+        };
+
+        reader.readAsDataURL(input.files[0]);
+    }
+</script>
+
+{% endblock %}

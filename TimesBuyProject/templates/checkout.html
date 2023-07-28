@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+{% block body %}
+{% load static %}
+<style>
+  /* Custom CSS styles */
+  .checkout-container {
+    background-color: #0B1C39;
+    margin-bottom: 10px;
+    font-family: 'Josefin Sans', sans-serif;
+  }
+
+  .address-card {
+    margin-bottom: 20px;
+    margin-top:20px;
+    padding: 10px;
+    height:500px;
+    background-color: #EDF1FF;
+  }
+
+  .address-card .card-text {
+    margin-bottom: 5px;
+  }
+
+  .address-card .btn-choose {
+    border-color: #0B1C39;
+    background-color: white;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+  }
+
+  .address-card .btn-choose:hover {
+    background-color: #FF2020;
+  }
+
+  .order-summary {
+    border: solid #0B1C39;
+    background-color: #EDF1FF;
+    padding: 10px;
+  }
+
+  .order-summary .subtotal,
+  .order-summary .shipping-charge,
+  .order-summary .total {
+    margin-bottom: 5px;
+  }
+
+  .order-summary span {
+    display: inline-block;
+    width: 120px;
+  }
+
+  .order-summary button {
+    margin-top: 10px;
+  }
+</style>
+
+<div class="container-fluid checkout-container">
+  <div class="row justify-content-center">
+    <div class="col-12 text-center" style="color: white; font-weight: bold; margin-bottom: 10px;font-family: 'Josefin Sans', sans-serif; font-size: 64px; text-align: center;">
+      CHECK<span style="text-transform: uppercase; color: #FF2020;">out</span>
+    </div>
+  </div>
+</div>
+
+{% for msg in messages %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      {% if msg.tags == 'error' %}
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {% elif msg.tags == 'success' %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          {% else %}
+          <div class="alert alert-info alert-dismissible fade show" role="alert">
+            {% endif %}
+            {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+
+<div class="row container">
+  <!-- Address Section -->
+  <div class="col-md-8">
+    <div class="text-uppercase text-center" style="color: #FF2020; background-color: #0B1C39; font-size: 34px; font-weight: bold; padding: 10px;">
+      Shipping Address
+    </div>
+    <div class="row">
+      {% for address in addresses %}
+
+      <div class="col-md-4">
+        <div class="address-card">
+          {% if address.is_delivery_address %}
+          <div class="mb-3">
+            <span class="badge bg-danger">Delivery Address</span>
+          </div>
+          {% else %}
+          <div class="justify-content-between my-auto">
+            <div class="d-flex justify-content-between">
+              <div class="btn-group mt-auto">
+                <p style="margin-right: 10px;">Choose this as delivery address</p>
+                <a href="{% url 'choose_delivery_address' address.id %}"><button class="btn rounded-circle btn-choose"></button></a>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          <p class="card-text"><strong>{{ address.first_name }} {{ address.last_name }}</strong></p>
+          <p class="card-text"><strong>{{ address.email }}</strong></p>
+          <p class="card-text"><strong>{{ address.phone_number }}</strong></p>
+          <p class="card-text"><strong>{{ address.address_line_1 }}</strong></p>
+          {% if address.address_line_2 %}
+          <p class="card-text"><strong>{{ address.address_line_2 }}</strong></p>
+          {% endif %}
+          <p class="card-text"><strong>{{ address.city }}</strong></p>
+          <p class="card-text"><strong>{{ address.state }}</strong></p>
+          <p class="card-text"><strong>{{ address.postal_code }}</strong></p>
+          <p class="card-text"><strong>{{ address.country }}</strong></p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div>
+      <a href="{% url 'add_address' %}" class="btn " style="background-color:#0B1C39;color:white; margin-bottom:10px;">Add Address</a>
+    </div>
+  </div>
+  <!-- Order Summary Section -->
+  <div class="col-md-4" style="font-family: 'Josefin Sans', sans-serif;color:#0B1C39;">
+  <h3 class="text-uppercase" style="background-color:#0B1C39;color:#FF2020; text-align: center;">Order Summary</h3>
+  <div class="card order-summary">
+    <div class="subtotal">
+      <span>Subtotal:</span>
+      <span>₹ {{ subtotal }}</span>
+    </div>
+    <div class="discount-amount">
+      <span>Discount:</span>
+      <span>₹{{ discount_amount }}</span>
+    </div>
+    <div class="shipping-charge">
+      {% if subtotal >= 1000 %}
+      <span>Shipping:</span>
+      <span>Free</span>
+      {% else %}
+      <span>Shipping Charge:</span>
+      <span>₹ 50</span>
+      {% endif %}
+    </div>
+    <div class="total">
+      <span>Total:</span>
+      <span>₹
+        {{ total_price }}
+      </span>
+    </div>
+      {% if selected_address %}
+    <div>
+        <input type="radio" name="paymentOption" id="upi" value="upi" checked>
+        <label for="upi">UPI</label>
+        <input type="radio" name="paymentOption" id="cod" value="cod">
+        <label for="cod">Cash on Delivery</label>
+        <br>
+        <button class="btn btn-block" id="proceedBtn" style="background-color:#0B1C39; color:white;">Proceed to Payment</button>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+</div>
+</div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+
+
+    function initiateRazorpayPayment(){
+
+    // Make an AJAX POST request to initiate the payment
+    $.ajax({
+        type: "POST",
+        url: "/initiate_payment/",  // Replace with the actual URL of your Django view
+        headers: { "X-CSRFToken": "{{ csrf_token }}" }, // Add this line to include the CSRF token
+        dataType: 'json',  // Expect JSON response from the server
+        success: function(response) {
+            // Update the options with the received data from the server
+            var options = {
+                "key": response.key,
+                "amount": response.amount,
+                "currency": response.currency,
+                "name": "TIMES BUY",
+                "description": "Thank you for purchasing from us",
+                "image": "{%static 'images/logo1.png'%}",
+                "order_id": response.order_id,
+                "handler": function (response) {
+
+                    var paymentId = response.razorpay_payment_id;
+                    var orderId = response.razorpay_order_id;
+                    var signature = response.razorpay_signature;
+
+                    $.ajax({
+                        type: "POST",
+                        url: "/online_payment_order/{{selected_address.id}}",
+                        headers: { "X-CSRFToken": "{{ csrf_token }}" },
+                        data: {
+                            payment_id: paymentId,
+                            orderId: orderId,
+                            signature: signature
+                        },
+                        success: function(response) {
+                            var id = response.orderId
+                            console.log("Order ID:", id);
+                            window.location.href ={% url 'order_success'%}
+
+                            console.log("Order placed successfully!");
+                        },
+                        error: function(xhr, status, error) {
+                            // Handle the error if any
+                            console.log(xhr.responseText);
+                            alert("Error placing the order. Please try again.");
+                        }
+                    });
+
+
+                },
+                "prefill": {
+                    "name": "Gaurav Kumar",
+                    "email": "gaurav.kumar@example.com",
+                    "contact": "9000090000"
+                },
+                "notes": {
+                    "address": "Razorpay Corporate Office"
+                },
+                "theme": {
+                    "color": "#3399cc"
+                }
+            };
+
+            // Create a new instance of Razorpay with updated options
+            var rzp1 = new Razorpay(options);
+
+            // Handle the payment response
+            rzp1.on('payment.failed', function(response) {
+                alert(response.error.code);
+                alert(response.error.description);
+                alert(response.error.source);
+                alert(response.error.step);
+                alert(response.error.reason);
+                alert(response.error.metadata.order_id);
+                alert(response.error.metadata.payment_id);
+            });
+
+            // Open the Razorpay payment popup
+            rzp1.open();
+        },
+        error: function(xhr, status, error) {
+            // Handle the error if any
+            console.log(xhr.responseText);
+            alert("Error initiating payment. Please try again.");
+        }
+    });
+
+    e.preventDefault();
+};
+document.getElementById("proceedBtn").addEventListener("click", function () {
+    var paymentOption = document.querySelector('input[name="paymentOption"]:checked').value;
+
+
+    if (paymentOption === "cod") {
+      // Code for Cash on Delivery
+      window.location.href = "{% url 'placeorder' selected_address.id  %}";
+      console.log("Cash on Delivery selected");
+    } else if (paymentOption === "upi") {
+      // Code for Razorpay
+      initiateRazorpayPayment();
+      console.log("Pay Using Razorpay selected");
+    } else if (paymentOption === "PUW") {
+      // Code for Pay Using Wallet\
+      alert("Your Paying using wallet");
+      window.location.href = "{% url 'pay_wallet' selected_address.id %}";
+      console.log("Pay Using Wallet selected");
+    }
+  });
+</script>
+{% endblock %}

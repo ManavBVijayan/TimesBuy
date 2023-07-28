@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% block body %}
+{% load static %}
+
+<section style="background-color: #f5f5f5; font-family: 'Josefin Sans', sans-serif;">
+   <div class="container-fluid" style=" background-color: #0B1C39; margin-bottom: 10px; font-family: 'Josefin Sans', sans-serif; font-size: 64px; text-align: center;">
+      <div style="color: white; font-weight: bold;">
+        Welcome <span style="text-transform: capitalize; color: #FF2020;">{{ user.username }}</span>
+      </div>
+      <h2 style="color: white; margin-top: 20px;">{{ tab|capfirst }}</h2>
+    </div>
+    <div class="row container">
+      <div class="col-lg-4">
+        <div class="card mb-4">
+          <div class="card-body text-center">
+            <div class="d-flex justify-content-center">
+              <img src="https://th.bing.com/th/id/OIP.AULBZmvneENxrYYlPAZghgHaHa?w=178&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7"
+                alt="avatar" class="rounded-circle img-fluid" style="width: 150px;">
+            </div>
+            <h5 class="my-3">{{ user.username }}</h5>
+            <p class="text-muted mb-4">{{ user.date_joined }}</p>
+            <p class="text-muted mb-4">{{ user.email }}</p>
+            <p class="text-muted mb-4">{{ user.phone_number }}</p>
+           <a href="{% url 'change_password' %}" style="text-decoration: none;">
+              <p class="text-muted mb-4">change password</p>
+            </a>
+
+            <ul class="list-group list-group-flush rounded-3">
+              <li class="list-group-item {% if tab == 'profile' %}active{% endif %}">
+                <a href="{% url 'profile_view' %}?tab=profile" style="text-decoration: none; color: {% if tab == 'profile' %}white{% else %}#FF2020{% endif %};">Profile</a>
+              </li>
+              <li class="list-group-item {% if tab == 'address' %}active{% endif %}">
+                <a href="{% url 'show_address' %}" style="text-decoration: none; color: {% if tab == 'address' %}white{% else %}#FF2020{% endif %};">Address</a>
+              </li>
+              <li class="list-group-item {% if tab == 'orders' %}active{% endif %}">
+                <a href="{% url 'order-list' %}" style="text-decoration: none; color: {% if tab == 'orders' %}white{% else %}#FF2020{% endif %};">Orders</a>
+              </li>
+              <li class="list-group-item {% if tab == 'wallet' %}active{% endif %}">
+                <a href="{% url 'view_wallet' %}" style="text-decoration: none; color: {% if tab == 'wallet' %}white{% else %}#FF2020{% endif %};">Wallet</a>
+              </li>
+            </ul>
+            <div class="d-flex justify-content-center mb-2">
+              <a href="" class="btn btn-dark" style="background-color: #0B1C39; width: 100px; border-radius: 5px;">Logout</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-8">
+        {% for msg in messages %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                     {% if msg.tags == 'error' %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                      {% elif msg.tags == 'success' %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                      {% else %}
+                            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                      {% endif %}
+                        {{ msg }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        <div class=" col-md-12">
+          <div class="card-body">
+            {% if tab == 'profile' %}
+              <div class="card-body">
+                {% if selected_address %}
+                  <h5 class="card-title">Selected Delivery Address:</h5>
+                  <div class="card mb-2">
+                    <div class="card-body">
+                      <h5 class="card-title">{{ selected_address.first_name }} {{ selected_address.last_name }}</h5>
+                      <p class="card-text"><strong>Email:</strong> {{ selected_address.email }}</p>
+                      <p class="card-text"><strong>Phone Number:</strong> {{ selected_address.phone_number }}</p>
+                      <p class="card-text"><strong>Address Line 1:</strong> {{ selected_address.address_line_1 }}</p>
+                      {% if selected_address.address_line_2 %}
+                        <p class="card-text"><strong>Address Line 2:</strong> {{ selected_address.address_line_2 }}</p>
+                      {% endif %}
+                      <p class="card-text"><strong>City:</strong> {{ selected_address.city }}</p>
+                      <p class="card-text"><strong>State:</strong> {{ selected_address.state }}</p>
+                      <p class="card-text"><strong>Postal Code:</strong> {{ selected_address.postal_code }}</p>
+                      <p class="card-text"><strong>Country:</strong> {{ selected_address.country }}</p>
+                    </div>
+                  </div>
+                {% else %}
+                  <h5 class="card-title">No Address</h5>
+                  <a href="{% url 'add_address' %}" class="btn " style="background-color:#0B1C39;color:white;">Add Address</a>
+                {% endif %}
+              </div>
+
+            {% elif tab == 'address' %}
+              <!-- Existing code for displaying addresses -->
+              <div>
+                {% for address in addresses %}
+                    <div class="card" style="margin-bottom:10px;">
+                      <div class="card-body">
+                        {% if address.is_delivery_address %}
+                          <div class="mb-3">
+                            <span class="badge bg-success">Delivery Address</span>
+                          </div>
+                        {% endif %}
+                        <h5 class="card-title">{{ address.first_name }} {{ address.last_name }}</h5>
+                        <p class="card-text"><strong>First Name:</strong> {{ address.first_name }}</p>
+                        <p class="card-text"><strong>Last Name:</strong> {{ address.last_name }}</p>
+                        <p class="card-text"><strong>Email:</strong> {{ address.email }}</p>
+                        <p class="card-text"><strong>Phone Number:</strong> {{ address.phone_number }}</p>
+                        <p class="card-text"><strong>Address Line 1:</strong> {{ address.address_line_1 }}</p>
+                        {% if address.address_line_2 %}
+                          <p class="card-text"><strong>Address Line 2:</strong> {{ address.address_line_2 }}</p>
+                        {% endif %}
+                        <p class="card-text"><strong>City:</strong> {{ address.city }}</p>
+                        <p class="card-text"><strong>State:</strong> {{ address.state }}</p>
+                        <p class="card-text"><strong>Postal Code:</strong> {{ address.postal_code }}</p>
+                        <p class="card-text"><strong>Country:</strong> {{ address.country }}</p>
+                        <div class=" justify-content-between">
+                          {% if not address.is_delivery_address %}
+                          <div class="d-flex justify-content-between">
+                            <a href="{% url 'edit_address' address.id %}" class="btn " style="background-color:#0B1C39;color:white;">Edit</a>
+                            <div class="btn-group ">
+                              <p style="margin-right: 10px;">Choose this as delivery address</p>
+                              <a href="{% url 'choose_delivery_address' address.id %}"><button class="btn rounded-circle btn-choose"></button></a>
+                            </div>
+                          </div>
+                          <div class="d-flex justify-content-center">
+                          <a href="{% url 'delete_address' address.id %}" class="btn " style="background-color:#FF2020;color:white;">Delete</a>
+                          </div>
+                          {% else %}
+                            <div class="btn-group">
+                              <a href="{% url 'edit_address' address.id %}" class="btn" style="background-color:#0B1C39;color:white;">Edit</a>
+                            </div>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                {% endfor %}
+              </div>
+              <div>
+                <a href="{% url 'add_address' %}" class="btn " style="background-color:#0B1C39;color:white;">Add Address</a>
+              </div>
+            {% elif tab == 'orders' %}
+                <div class="card-body">
+                    <h5 class="product-list-title fw-semibold mb-4 text-center">PRODUCTS</h5>
+                    <div class="table-responsive">
+                        {% if orders %}
+                      <table class="table" style="color:#0B1C39;font-family:'Josefin Sans', sans-serif;">
+                               <thead>
+                                  <tr>
+                                     <th scope="col">Order Id</th>
+                                     <th scope="col">Order Status</th>
+                                     <th scope="col">Payment Method</th>
+                                     <th scope="col">Order Date</th>
+                                     <th scope="col">Delivery Date</th>
+                                     <th scope="col">Action</th>
+                                  </tr>
+                               </thead>
+                               <tbody>
+                                  {% for order in orders %}
+                                  <tr>
+                                     <td>{{ order.id }}</td>
+                                     <td>{{ order.payment_status }}</td>
+                                     <td>{{ order.payment_method }}</td>
+                                     <td>{{ order.order_date }}</td>
+                                     <td>{{ order.delivery_date }}</td>
+                                     <td>
+                                        <div class="btn">
+                                            <a href="{% url 'order_detail' order_id=order.id %}" class="btn btn-primary">View</a>
+                                        </div>
+                                     </td>
+                                  </tr>
+                                  {% endfor %}
+                               </tbody>
+                            </table>
+                            {% else %}
+                            <p>No orders found.</p>
+                            {% endif %}
+                         </div>
+                      </div>
+            {% elif tab == 'wallet' %}
+              <div class="card-body">
+                <h5 class="card-title">Wallet Details</h5>
+                <p>Username: {{ wallet.user.username }}</p>
+                <p>Balance: {{ wallet.balance }}</p>
+                <!-- Add other wallet details if needed -->
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+</section>
+<style>
+  .btn-choose {
+  border-color:#0B1C39;
+    background-color: white;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+  }
+
+  .btn-choose:hover {
+    background-color: #FF2020;
+  }
+  .list-group-item.active {
+  background-color: #0B1C39;
+}
+
+.list-group-item.active a.nav-link {
+  color: white;
+}
+
+</style>
+{% endblock %}
+

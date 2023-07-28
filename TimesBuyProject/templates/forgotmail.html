@@ -1,0 +1,10 @@
+<!-- verification_email.html -->
+{% autoescape off %}
+Hello {{ user.username }},
+
+Click the link below to reset your password:
+
+{{ verification_url }}
+
+If you did not request a password reset, please ignore this email.
+{% endautoescape %}

@@ -40,7 +40,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'Authenticate',
-    'Store'
+    'Store',
+    'Admindashboard',
+    'Cartapp',
+    'Userprofileapp',
+    'orderapp',
 ]
 
 MIDDLEWARE = [
@@ -80,7 +84,7 @@ WSGI_APPLICATION = 'TimesBuyProject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'timesbuydb',
+        'NAME': 'timesbuydatabase',
         'USER': 'postgres',
         'PASSWORD' : 'manav12',
         'HOST' : 'localhost',
@@ -140,6 +144,42 @@ EMAIL_HOST_USER = 'timesbuyeshop@gmail.com'  # Replace with your Gmail address
 EMAIL_HOST_PASSWORD = 'bdfmvvokblsolpur'  # Replace with your Gmail password or app password
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+RAZOR_KEY_ID='rzp_test_98XGYT9co5eC5l'
+RAZOR_KEY_SECRET='b46k91t5lEgC2CP5XXM5DHUA'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Default primary key field type

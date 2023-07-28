@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+<section style="background-color: lightgray;">
+  <div class="container" >
+    <div class="row">
+      <div class="col-md-4 col-lg-3" style="padding-top:20px">
+        <!-- Category Table -->
+        <table class="category-table">
+          <thead>
+            <tr>
+              <th>Categories</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <a href="?category=all">All Products</a>
+              </td>
+            </tr>
+            {% for category in categories %}
+              <tr>
+                <td>
+                  <a href="?category={{ category.id }}">{{ category.name }}</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="col-md-8 col-lg-9">
+        <!-- Banner Image -->
+        <div class="banner-image">
+          <img src="{% static 'images/homebanner.jpg' %}" alt="Vertical Image" style="object-fit: cover; width: 100%; height: 100%;">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section style="background-color: lightgray; padding-top: 10px;">
+  <div class="product-title">
+    {{ current_category }}
+  </div>
+
+  <div class="container" style="padding-top: 10px">
+    <div class="row">
+      <div class="col-md-3 col-sm-12">
+        <!-- Filteration Table -->
+        <table class="filteration-table">
+          <thead>
+            <tr>
+              <th>Filter Options</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <input type="checkbox" id="option1" name="option" value="Option 1">
+                <label for="option1">Option 1</label>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" id="option2" name="option" value="Option 2">
+                <label for="option2">Option 2</label>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" id="option3" name="option" value="Option 3">
+                <label for="option3">Option 3</label>
+              </td>
+            </tr>
+            <!-- Add more filter options as needed -->
+          </tbody>
+        </table>
+      </div>
+      <div class="col-md-9">
+        <div class="row">
+          {% for product in products %}
+            <div class="col-md-4">
+              <div class="card">
+                <a href="{% url 'product_detail' slug=product.slug %}">
+                  {% if product.productvariant_set.all.0.images.all %}
+                    <img src="{{ product.productvariant_set.all.0.images.all.0.image.url }}" alt="{{ product.name }}" class="card-img-top">
+                  {% else %}
+                    <!-- Add a placeholder image if no image is available -->
+                    <img src="{% static 'images/placeholder.jpg' %}" alt="Placeholder" class="card-img-top">
+                  {% endif %}
+                </a>
+                <div class="card-body">
+                  <h5 class="card-title">{{ product.name }}</h5>
+                  <p class="card-text">Price: {{ product.productvariant_set.all.0.price }}</p>
+                  <!-- Display more details as needed -->
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock %}

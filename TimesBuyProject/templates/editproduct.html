@@ -1,0 +1,55 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container-fluid product-edit" style="margin-top: 130px; margin-bottom: 20px;">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="product-edit-title fw-semibold mb-4 text-center">Edit Product</h5>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Product Name</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ product.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" required>{{ product.description }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="" selected disabled>Select category</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}" {% if category.id == product.category.id %}selected{% endif %}>{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="brandName" class="form-label">Brand</label>
+                        <select class="form-select" id="brandName" name="brand" required>
+                            <option value="" selected disabled>Select brand</option>
+                            {% for brand in brands %}
+                                <option value="{{ brand.id }}" {% if brand.id == product.brandName.id %}selected{% endif %}>{{ brand.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="gender" class="form-label">Gender</label>
+                        <select class="form-select" id="gender" name="gender" required>
+                            <option value="" selected disabled>Select gender</option>
+                            {% for gender in genders %}
+                                <option value="{{ gender.id }}" {% if gender.id == product.gender.id %}selected{% endif %}>{{ gender.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <!-- Add other fields as needed -->
+
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -4,6 +4,7 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
 }
+
 .navbar-nav .nav-link {
     color: #001f3f;
 }
@@ -20,3 +21,295 @@
 .vertical-image {
   margin-left: auto;
 }
+.message-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.verification-box {
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.message-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.verification-box {
+    text-align: center;
+}
+.home-title{
+    background-color:#FF2020;
+    height: 8vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Josefin Sans', sans-serif;
+    color:white;
+    text-transform: uppercase;
+    font-size:25px;
+}
+.category-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.category-card img {
+  transition: transform 0.3s;
+}
+
+.category-card:hover img {
+  transform: scale(1.1);
+}
+
+.category-name {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #0B1C39;
+  color: #fff;
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.category-image {
+    width: 100%;
+    height: 400px; /* Adjust the desired height */
+    object-fit: cover;
+}
+.brand-card {
+  position: relative;
+  overflow: hidden;
+}
+.brand-card img {
+  transition: transform 0.3s;
+}
+
+.brand-card:hover img {
+  transform: scale(1.1);
+}
+.brand-name {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #0B1C39;
+  color: #fff;
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.brand-image {
+    width: 100%;
+    height: 400px; /* Adjust the desired height */
+    object-fit: cover;
+}
+.category-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.category-table th,
+.category-table td {
+  padding: 10px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.category-table th {
+  background-color:  #0B1C39;
+  color: white;
+}
+
+.filteration-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.filteration-table th,
+.filteration-table td {
+  padding: 10px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.filteration-table th {
+  background-color:  #0B1C39;
+  color: white;
+}
+
+
+
+ /* Hover Styling for Product Image */
+.product-detail-image {
+  position: relative;
+  overflow: hidden;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.product-detail-image:hover .image-overlay {
+  opacity: 1;
+}
+ .product-details {
+    background-color: #f1f1f1;
+    padding: 20px;
+    border-radius: 5px;
+  }
+
+  .product-details h2 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+  .product-details p {
+    font-size: 16px;
+    color: #777;
+    margin-bottom: 8px;
+  }
+
+  .product-details button {
+    margin-top: 10px;
+  }
+
+  .specification-review-box {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 20px;
+  }
+
+  .button-group {
+    margin-bottom: 20px;
+  }
+
+  .content-box {
+    background-color: #f1f1f1;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+
+  .content-box h3 {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+  .content-box ul {
+    list-style-type: disc;
+    margin-left: 20px;
+  }
+
+  .content-box p {
+    font-size: 16px;
+    color: #777;
+    margin-bottom: 8px;
+  }
+#review-btn,#specification-btn,#add-to-cart{
+background-color:#0B1C39;
+color:white;
+}
+
+.card-img-top {
+    object-fit: cover;
+    width: 100%;
+    height: 300px; /* Adjust the height as needed */
+    margin-bottom: 0; /* Remove the gap between the image and comment section */
+  }
+
+  /* CSS for card title */
+  .card-title {
+    font-weight: bold; /* Set the font weight for the title */
+    font-size: 18px; /* Set the font size for the title */
+    margin-bottom: 10px; /* Add spacing below the title */
+  }
+
+  /* CSS for card price */
+  .card-price {
+    font-weight: bold; /* Set the font weight for the price */
+    font-size: 16px; /* Set the font size for the price */
+  }
+.product-title{
+    background-color:#0B1C39;
+    height: 8vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Josefin Sans', sans-serif;
+    color:white;
+    text-transform: uppercase;
+    font-size:25px;
+}
+
+.product-detail-image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.product-detail-image:hover .product-detail-image-overlay {
+  opacity: 1;
+}
+/* CSS for active status */
+.user-table .active-status-true {
+  color: green;
+}
+
+.user-table .active-status-false {
+  color: red;
+}
+.user-table{
+    border: 1px solid  #FF2020;
+}
+
+.cat-list-title{
+    color:#FF2020;
+    font-family:'Josefin Sans', sans-serif;
+}
+.clr-txt{
+    color:#FF2020;
+    font-family:'Josefin Sans', sans-serif;
+}
+.shop-cart{
+
+}
+.btn-choose {
+  border-color:#0B1C39;
+    background-color: white;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+  }
+
+  .btn-choose:hover {
+    background-color: #FF2020;
+  }

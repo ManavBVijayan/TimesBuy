@@ -1,0 +1,100 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container-fluid product-edit-variant" style="margin-top: 130px; margin-bottom: 20px;">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="product-detail-title fw-semibold mb-4 text-center">Edit Variant: {{ variant.model_name }}</h5>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="model_name" class="form-label">Model Name</label>
+                        <input type="text" class="form-control" id="model_name" name="model_name" value="{{ variant.model_name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="model_number" class="form-label">Model Number</label>
+                        <input type="text" class="form-control" id="model_number" name="model_number" value="{{ variant.model_number }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="dial_shape" class="form-label">Dial Shape</label>
+                        <input type="text" class="form-control" id="dial_shape" name="dial_shape" value="{{ variant.dial_shape }}">
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="water_proof" name="water_proof" {% if variant.water_proof %}checked{% endif %}>
+                        <label class="form-check-label" for="water_proof">Waterproof</label>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="touch_screen" name="touch_screen" {% if variant.touch_screen %}checked{% endif %}>
+                        <label class="form-check-label" for="touch_screen">Touch Screen</label>
+                    </div>
+                    <div class="mb-3">
+                        <label for="color" class="form-label">Color</label>
+                        <select class="form-select" id="color" name="color">
+                            {% for color in colors %}
+                                <option value="{{ color.id }}" {% if variant.color.id == color.id %}selected{% endif %}>{{ color.color }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Price</label>
+                        <input type="text" class="form-control" id="price" name="price" value="{{ variant.price }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="stock" class="form-label">Stock</label>
+                        <input type="number" class="form-control" id="stock" name="stock" value="{{ variant.stock }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="images" class="form-label">Images</label>
+                        <input type="file" class="form-control" id="images" name="images" multiple>
+                    </div>
+                    <div class="mb-3">
+                        <label for="existing-images-container" class="form-label">Existing Images</label>
+                        <div class="d-flex" id="existing-images-container">
+                            {% for image in variant.images.all %}
+                                <div class="me-2">
+                                    <img src="{{ image.image.url }}" alt="Variant Image" width="100" height="100">
+                                </div>
+                            {% empty %}
+                                <p>No existing images</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Image preview functionality
+    function previewImages(input) {
+        var container = document.getElementById('existing-images-container');
+        container.innerHTML = '';
+
+        if (input.files && input.files.length > 0) {
+            for (var i = 0; i < input.files.length; i++) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var image = document.createElement('img');
+                    image.src = e.target.result;
+                    image.alt = 'Variant Image';
+                    image.width = 100;
+                    image.height = 100;
+                    container.appendChild(image);
+                };
+                reader.readAsDataURL(input.files[i]);
+            }
+        }
+    }
+
+    // Add event listener to the file input
+    var fileInput = document.getElementById('images');
+    fileInput.addEventListener('change', function() {
+        previewImages(this);
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% block body %}
+{% load static %}
+<div class="container-fluid" style=" background-color: #0B1C39;margin-bottom:10px;font-family: 'Josefin Sans', sans-serif;">
+    <div class="row justify-content-center" style="height:120px;background-color: #0B1C39; margin-bottom: 10px; font-family: 'Josefin Sans', sans-serif; font-size: 64px; text-align: center;">
+        <div style="color: white; font-weight: bold;">
+        Shopping <span style="text-transform: capitalize; color: #FF2020;">Cart</span>
+      </div>
+    </div>
+</div>
+{% for msg in messages %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                     {% if msg.tags == 'error' %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                      {% elif msg.tags == 'success' %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                      {% else %}
+                            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                      {% endif %}
+                        {{ msg }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+<!-- Shopping Cart -->
+<section class=" shop-cart "  style="font-family: 'Josefin Sans', sans-serif; margin-bottom:10px;">
+<div class="bg0 p-t-75 p-b-85">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 col-xl-7 m-lr-auto m-b-100">
+                <div class="m-l-25 m-r--38 m-lr-0-xl">
+                    <div class="table-responsive">
+                        <table class="table cart-table table-striped table-bordered">
+                            <thead style="color:white; background-color:#0B1C39">
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Qty * Price</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cart_item in cart.cartitem_set.all %}
+                                <tr>
+                                    <td>
+                                        <div class="how-itemcart1">
+                                            <img src="{{ cart_item.product.images.first.image.url }}" alt="Product Image" style="height: 60px; width: 60px;">
+                                        </div>
+                                    </td>
+                                    <td>{{ cart_item.product.product.name }}-{{ cart_item.product.color }}</td>
+                                    <td>₹ {{ cart_item.product.price }}</td>
+                                    <td>
+                                       <div class="d-flex align-items-center">
+                                            <button class="btn btn-sm {% if cart_item.quantity <= 1 %}btn-light disabled{% else %}{% endif %} cart-btn" id="decreaseBtn{{ cart_item.id }}" onclick="decreaseQuantity('{{ cart_item.id }}');" style="background-color: #FF2020; font-weight: bold; color:white;width: 30px;height: 30px;padding: 0;font-size: 14px;">-</button>
+                                            <input type="number" class="form-control form-control-sm quantity-input" id="qty{{ cart_item.id }}" step="1" min="1" max="300" name="quantity" value="{{ cart_item.quantity }}" onchange="updateQuantity('{{ cart_item.id }}', this.value);" style="width: 60px; text-align: center; height: 30px;background-color:#0B1C39; color:white;">
+                                            <button class="btn btn-sm {% if cart_item.quantity >= cart_item.product.stock %}btn-light disabled{% else %}{% endif %} cart-btn" id="increaseBtn{{ cart_item.id }}" onclick="increaseQuantity('{{ cart_item.id }}','{{ cart_item.product.stock }}');" style="background-color: #FF2020; font-weight: bold; color:white;width: 30px;height: 30px;padding: 0;font-size: 14px;">+</button>
+                                        </div>
+
+                                    </td>
+                                    <td>₹ {{ cart_item.subtotal }}</td>
+                                    <td>
+                                        <form method="POST" action="{% url 'remove_from_cart' %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="item_id" value="{{ cart_item.id }}">
+                                            <button type="submit" class="btn btn-sm" style="color: #0B1C39; background-color: #FF2020;">Remove</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-10 col-lg-7 col-xl-5 m-lr-auto m-b-50">
+                <form method="POST" action="{% url 'apply_coupon' %}">
+                    {% csrf_token %}
+                    <div class="btn-group mb-3">
+                        <div class="btn-group">
+                            <input class="form-control" type="text" name="coupon_code" placeholder="Coupon Code" style="width: 250px;">
+                            <button type="submit" style="width: 250px; color: #0B1C39; background-color: #FF2020; border: none; padding: 10px;">Apply Coupon</button>
+                        </div>
+                    </div>
+                </form>
+                <div class="border rounded p-4">
+                    <h4 class="mtext-109 cl2 mb-4">Cart Totals</h4>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="stext-110 cl2">Subtotal:</span>
+                        <span class="mtext-110 cl2">₹ {{ subtotal }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="stext-110 cl2">Discount Amount:</span>
+                        <span class="mtext-110 cl2">{{ discount_amount }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="stext-101 cl2">Total:</span>
+                            <span class="mtext-110 cl2">₹ {{ total_price }}</span>
+                    </div>
+                    <div class="mt-4">
+                        {% if total_price_after_discount == 0 %}
+                            <a href="" class="btn btn-lg btn-block"  style="background-color: #0B1C39; color:white;">Shop more</a>
+                        {% else %}
+                            <a href="{% url 'checkout' %}?discount={{ discount_amount }}" class="btn btn-lg btn-block" style="background-color: #0B1C39; color:white;">Proceed to Checkout</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</section>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    function increaseQuantity(item_id, stock) {
+      var quantityInput = $('#qty' + item_id);
+      var quantity = parseInt(quantityInput.val());
+      if (quantity < stock) {
+        quantity += 1;
+        updateQuantity(item_id, quantity);
+      }
+    }
+
+    function decreaseQuantity(item_id) {
+      var quantityInput = $('#qty' + item_id);
+      var quantity = parseInt(quantityInput.val());
+      if (quantity > 1) {
+        quantity -= 1;
+        updateQuantity(item_id, quantity);
+      }
+    }
+
+    function updateQuantity(item_id, quantity) {
+      var url = "{% url 'update_quantity' %}";
+      var csrfToken = "{{ csrf_token }}";
+
+      $.ajax({
+        url: url,
+        type: "POST",
+        data: {
+          item_id: item_id,
+          quantity: quantity,
+          csrfmiddlewaretoken: csrfToken
+        },
+        success: function(response) {
+          window.location.reload();
+        },
+        error: function(xhr, status, error) {
+          console.error(error);
+        }
+      });
+    }
+  </script>
+
+{% endblock %}

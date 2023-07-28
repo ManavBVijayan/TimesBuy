@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block body %}
+{% load static %}
+
+<div class="bg0 p-t-75 p-b-85" style="margin-top: 130px;">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 mb-4 d-flex justify-content-center">
+        <div class="card mb-4">
+          <div class="card-header d-flex justify-content-center py-3">
+            <h5 class="mb-0">Edit Address</h5>
+          </div>
+          <div class="card-body d-flex justify-content-center">
+            <form method="POST" action="{% url 'edit_address' address_id %}">
+              {% csrf_token %}
+
+              <!-- 2 column grid layout with text inputs for the first and last names -->
+              <div class="row mb-3">
+                <div class="col">
+                  <div class="form-outline">
+                    <input type="text" id="fname" name="fname" class="form-control" placeholder="First Name" value="{{ user_address.first_name }}" />
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="form-outline">
+                    <input type="text" id="lname" name="lname" class="form-control" placeholder="Last Name" value="{{ user_address.last_name }}" />
+                  </div>
+                </div>
+              </div>
+              <!-- Text input -->
+              <div class="form-outline mb-4">
+                <input type="text" id="address1" class="form-control" name="address1" placeholder="Address" value="{{ user_address.address_line_1 }}" />
+              </div>
+              <div class="form-outline mb-4">
+                <input type="text" id="address2" class="form-control" name="address2" placeholder="Additional Address" value="{{ user_address.address_line_2 }}" />
+              </div>
+
+              <!-- Text input -->
+              <div class="form-outline mb-4">
+                <input type="text" id="city" class="form-control" name="city" placeholder="City" value="{{ user_address.city }}" />
+              </div>
+
+              <!-- Text input -->
+              <div class="form-outline mb-4">
+                <input type="text" id="state" class="form-control" name="state" placeholder="State" value="{{ user_address.state }}" />
+              </div>
+
+              <!-- Text input -->
+              <div class="form-outline mb-4">
+                <input type="text" id="country" class="form-control" name="country" placeholder="Country" value="{{ user_address.country }}" />
+              </div>
+
+              <!-- Email input -->
+              <div class="form-outline mb-4">
+                <input type="email" id="email" class="form-control" name="email" placeholder="Email" value="{{ user_address.email }}" />
+              </div>
+
+              <!-- Number input -->
+              <div class="form-outline mb-4">
+                <input type="number" id="pincode" class="form-control" name="pincode" placeholder="Postal Code" value="{{ user_address.postal_code }}" />
+              </div>
+
+              <!-- Number input -->
+              <div class="form-outline mb-4">
+                <input type="number" id="phone" class="form-control" name="phone" placeholder="Mobile Number" value="{{ user_address.phone_number }}" />
+              </div>
+
+              <!-- Checkbox -->
+              <!-- Checkbox -->
+              <div class="form-check mb-4">
+                <input class="form-check-input" type="checkbox" id="is_delivery_address" name="is_delivery_address" {% if user_address.is_delivery_address %}checked{% endif %} value="True">
+                <label class="form-check-label" for="is_delivery_address">
+                  Choose as Delivery Address
+                </label>
+              </div>
+
+              <div class="d-flex justify-content-center mb-2">
+                <button type="submit" class="btn btn-dark px-3 py-2" style="border-radius: 28px;">Submit</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

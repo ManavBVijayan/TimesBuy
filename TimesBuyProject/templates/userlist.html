@@ -1,0 +1,60 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block body %}
+<section>
+  <div class="container-fluid" style="margin-top: 130px; margin-bottom: 20px;">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-body" style="background-color: #9C9FCC;">
+            <h5 class="card-title fw-semibold mb-4">USER TABLE</h5>
+            <div class="table-responsive">
+              <table class="table user-table table-striped table-bordered">
+                <thead>
+                  <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Phone number</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Active</th>
+                    <th scope="col">Admin</th>
+                    <th scope="col">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for user in users %}
+                  <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.phone_number }}</td>
+                    <td>{{ user.email }}</td>
+                    <td class="{% if user.is_active %}text-success{% else %}text-danger{% endif %}">
+                      {% if user.is_active %}
+                        <b>Active</b>
+                      {% else %}
+                        <b>Inactive</b>
+                      {% endif %}
+                    </td>
+                    <td>{{ user.is_superuser }}</td>
+                    {% if user.is_active %}
+                    <td>
+                      <a class="text-center btn btn-sm" href="{% url 'block-user' user.id %}" style="background-color: #0B1C39;color:white;padding-bottom:10px;width:80px;">BLOCK</a>
+                    </td>
+                    {% else %}
+                    <td>
+                      <a href="{% url 'unblock-user' user.id %}" class="text-center btn btn-sm" style="background-color: #FF2020;color:white;padding-bottom:10px;width:80px;">UNBLOCK</a>
+                    </td>
+                    {% endif %}
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

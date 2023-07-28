@@ -1,0 +1,38 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container-fluid" style="margin-top: 130px; margin-bottom: 20px;">
+  <h1>All Orders</h1>
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>User</th>
+        <th>Total Price</th>
+        <th>Payment Status</th>
+        <th>Payment Method</th>
+        <th>Order Date</th>
+        <th>Delivery Date</th>
+        <th>Action</th> <!-- New column for the View button -->
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td>{{ order.id }}</td>
+        <td>{{ order.user.username }}</td>
+        <td>{{ order.total_price }}</td>
+        <td>{{ order.payment_status }}</td>
+        <td>{{ order.payment_method }}</td>
+        <td>{{ order.order_date }}</td>
+        <td>{{ order.delivery_date }}</td>
+        <td> <!-- Add the View button link -->
+          <a href="{% url 'admin_order_view' order.id %}" class="btn btn-primary btn-sm">View</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

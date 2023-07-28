@@ -1,0 +1,124 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container-fluid add-product" style="margin-top: 130px; margin-bottom: 20px;">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="add-product-title fw-semibold mb-4 text-center">Add Product</h5>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="name" style="margin-bottom: 10px;">Product Name</label>
+                        <input type="text" class="form-control" id="name" name="name">
+                    </div>
+                    <div class="form-group">
+                        <label for="description" style="margin-bottom: 10px;">Description</label>
+                        <textarea class="form-control" id="description" name="description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="category" style="margin-bottom: 10px;">Category</label>
+                        <select class="form-control" id="category" name="category">
+                            {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="brand" style="margin-bottom: 10px;">Brand</label>
+                        <select class="form-control" id="brand" name="brand">
+                            {% for brand in brands %}
+                            <option value="{{ brand.id }}">{{ brand.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="gender" style="margin-bottom: 10px;">Gender</label>
+                        <select class="form-control" id="gender" name="gender">
+                            {% for gender in genders %}
+                            <option value="{{ gender.id }}">{{ gender.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Variant Details -->
+                    <h5 class="variant-title fw-semibold mb-4 text-center">Variant Details</h5>
+                    <div class="form-group">
+                        <label for="model_name" style="margin-bottom: 10px;">Model Name</label>
+                        <input type="text" class="form-control" id="model_name" name="model_name">
+                    </div>
+                    <div class="form-group">
+                        <label for="model_number" style="margin-bottom: 10px;">Model Number</label>
+                        <input type="text" class="form-control" id="model_number" name="model_number">
+                    </div>
+                    <div class="form-group">
+                        <label for="dial_shape" style="margin-bottom: 10px;">Dial Shape</label>
+                        <input type="text" class="form-control" id="dial_shape" name="dial_shape">
+                    </div>
+                    <div class="form-group form-check" style="margin-bottom: 10px;">
+                        <input type="checkbox" class="form-check-input" id="water_proof" name="water_proof">
+                        <label class="form-check-label" for="water_proof">Waterproof</label>
+                    </div>
+                    <div class="form-group form-check" style="margin-bottom: 10px;">
+                        <input type="checkbox" class="form-check-input" id="touch_screen" name="touch_screen">
+                        <label class="form-check-label" for="touch_screen">Touch Screen</label>
+                    </div>
+                    <div class="form-group">
+                        <label for="color" style="margin-bottom: 10px;">Color</label>
+                        <select class="form-control" id="color" name="color">
+                            {% for color in colors %}
+                            <option value="{{ color.id }}">{{ color.color }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="price" style="margin-bottom: 10px;">Price</label>
+                        <input type="number" class="form-control" id="price" name="price">
+                    </div>
+                    <div class="form-group">
+                        <label for="stock" style="margin-bottom: 10px;">Stock</label>
+                        <input type="number" class="form-control" id="stock" name="stock">
+                    </div>
+
+                    <!-- Images -->
+                    <div class="form-group">
+                        <label for="images" style="margin-bottom: 10px;">Images</label>
+                        <input type="file" class="form-control" id="images" name="images" multiple onchange="previewImages(event)">
+                        <div id="image-preview" style="display: flex; flex-wrap: wrap; gap: 10px; padding-top: 10px;"></div>
+                    </div>
+
+                    <div class="form-group mt-3">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function previewImages(event) {
+    var previewContainer = document.getElementById('image-preview');
+    previewContainer.innerHTML = ''; // Clear previous previews
+
+    var files = event.target.files;
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            var image = document.createElement('img');
+            image.src = e.target.result;
+            image.style.width = '100px';
+            image.style.height = '100px';
+            image.style.objectFit = 'cover';
+
+            previewContainer.appendChild(image);
+        };
+
+        reader.readAsDataURL(file);
+    }
+}
+</script>
+
+{% endblock %}

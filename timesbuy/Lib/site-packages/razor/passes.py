@@ -1,0 +1,434 @@
+"""
+ OCCAM
+
+ Copyright (c) 2011-2020, SRI International
+
+  All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+ * Neither the name of SRI International nor the names of its contributors may
+   be used to endorse or promote products derived from this software without
+   specific prior written permission.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""
+
+import sys
+import os
+import tempfile
+import shutil
+
+from . import config
+
+from . import driver
+
+from . import interface as inter
+
+from . import utils
+
+
+def interface(input_file, output_file, wrt, use_seadsa):
+    """ compute the interface for a single module.
+    """
+    args = ['-Pinterface']
+    if use_seadsa:
+        args += ['-Pinterface-with-seadsa',
+                 # improve precision of sea-dsa by considering types
+                 '--sea-dsa-type-aware=true']
+    args += ['-Pinterface-output', output_file]
+    args += driver.all_args('-Pinterface-entry', wrt)
+    return driver.previrt(input_file, '/dev/null', args)
+
+def propagate_interfaces(libs, ifaces, use_seadsa):
+    """ compute interfaces for all modules and perform global refinement
+    until stabilization.
+    """
+    tf = tempfile.NamedTemporaryFile(suffix='.iface', delete=False)
+    tf.close()
+    iface = inter.parseInterface(ifaces[0])
+    for i in ifaces[1:]:
+        inter.joinInterfaces(iface, inter.parseInterface(i))
+
+    inter.writeInterface(iface, tf.name)
+
+    progress = True
+    while progress:
+        progress = False
+        for l in libs:
+            interface(l, tf.name, [tf.name], use_seadsa)
+            x = inter.parseInterface(tf.name)
+            progress = inter.joinInterfaces(iface, x) or progress
+            inter.writeInterface(iface, tf.name)
+
+    os.unlink(tf.name)
+    return iface
+
+def specialize(input_file, output_file, rewrite_file, interfaces, \
+               policy, max_bounded):
+    """ inter module specialization.
+    """
+    args = ['-Pspecialize']
+    if not rewrite_file is None:
+        args += ['-Pspecialize-output', rewrite_file]
+    args += driver.all_args('-Pspecialize-input', interfaces)
+    if policy != 'none':
+        args += ['-Pspecialize-policy={0}'.format(policy)]
+    if policy == 'bounded':
+        args += ['-Pspecialize-max-bounded={0}'.format(max_bounded)]
+    if output_file is None:
+        output_file = '/dev/null'
+    return driver.previrt(input_file, output_file, args)
+
+def get_external_functions(input_file, output_file):
+    """
+    Get all function declarations within the main module
+    """
+
+    #print("Get External Functions invoked")
+    args = ["-PdumpExternFuncs"]
+    return driver.previrt(input_file,output_file,args)
+
+def lib_occamize(input_file, output_file, functions):
+    """
+    Part of OCCAMIZE a library by creating dummy main function which invokes a specified
+    function with non-deterministic arguments
+    """
+
+    args = ['-PaddMain']
+    for fn_name in functions.split(","):
+        args+= ['-entry-point={}'.format(fn_name)]
+
+    return driver.previrt(input_file,output_file, args)
+
+def remove_main(input_file, output_file):
+    """
+    Part of OCCAMIZE library by removing dummy main function
+    """
+    return driver.previrt(input_file,output_file, ['-PremoveMain'])
+
+
+def remove_functions(input_file, output_file, functions):
+    """
+    Remove functions and add runtime checks if they are executed
+    """
+    args = ['-Premove-function']
+    comma_separated_functions = functions.split(",")
+    for function in comma_separated_functions:
+        args += ['-remove-function-list={}'.format(function)]
+
+    return driver.previrt(input_file,output_file, args)
+
+def rewrite(input_file, output_file, rewrites, output=None):
+    """ inter module rewriting
+    """
+    args = ['-Prewrite'] + driver.all_args('-Prewrite-input', rewrites)
+    return driver.previrt_progress(input_file, output_file, args, output)
+
+def force_inline(input_file, output_file, inline_bounce, inline_specialized, output=None):
+    """ Force inlining of special functions
+    """
+    if not inline_bounce and not inline_specialized:
+        shutil.copy(input_file, output_file)
+        return 0
+
+    args = ['-Pinliner']
+    if inline_bounce:
+        sys.stderr.write("\tinlining bounce functions generated by devirt\n")
+        args += ['-Pinline-bounce-functions']
+    if inline_specialized:
+        sys.stderr.write("\tinlining specialized functions\n")
+        args += ['-Pinline-specialized-functions']
+    return driver.previrt_progress(input_file, output_file, args, output)
+
+def internalize(input_file, output_file, interfaces, whitelist):
+    """ marks unused symbols as internal/hidden
+    """
+    args = ['-Pinternalize'] + \
+           driver.all_args('-Pinternalize-wrt-interfaces', interfaces)
+
+    if whitelist is not None:
+        args = args + ['-Pkeep-external', whitelist]
+    return driver.previrt_progress(input_file, output_file, args)
+
+def strip(input_file, output_file):
+    """ strips unused symbols
+    """
+    args = [input_file, '-o', output_file]
+    args += ['-strip', '-strip-dead-prototypes']
+    return driver.run(config.get_llvm_tool('opt'), args)
+
+def devirt(devirt_method, input_file, output_file):
+    """use seadsa to resolve indirect function calls by adding multiple
+    direct calls. devirt_method = sea_dsa | sea_dsa_with_cha
+    """
+    assert devirt_method != 'none'
+    args = [ '-Pdevirt',
+             ## Improve precision of sea-dsa by considering types
+             '-sea-dsa-type-aware=true'
+             #, '-Presolve-incomplete-calls=true'
+             #, '-Pmax-num-targets=15'
+    ]
+
+    ## It tries to resolve C++ virtual calls prior to runnnig sea-dsa.
+    ## sea-dsa can reason about C++ virtual calls but the option
+    ## sea_dsa_with_cha runs some adhoc analysis that understands how
+    ## vtables look like in LLVM bitcode.
+    if devirt_method == 'sea_dsa_with_cha':
+        args += ['-Pdevirt-with-cha']
+
+    retcode = driver.previrt_progress(input_file, output_file, args)
+    if retcode != 0:
+        return retcode
+
+    # FIXME: previrt_progress returns 0 in cases where --Pdevirt may crash.
+    # Here we check that the output_file exists
+    if not os.path.isfile(output_file):
+        #Some return code different from zero
+        return 3
+    return retcode
+
+
+def profile(input_file, output_file):
+    """ count number of instructions, functions, memory accesses, etc.
+    """
+    args = ['-Pprofiler']
+    args += [
+        ## XXX: these can be expensive
+        '-profile-verbose=false'
+        ,'-profile-loops=true'
+        ,'-profile-safe-pointers=true'
+    ]
+    args += ['-profile-outfile={0}'.format(output_file)]
+    return driver.previrt(input_file, '/dev/null', args)
+
+def peval(input_file, output_file, \
+          opt_options, \
+          policy, max_bounded, \
+          use_seaopt, use_seadsa,
+          force_inline_spec, \
+          use_ipdse, use_crabopt, log=None):
+    """ intra module specialization/optimization
+    """
+    opt = tempfile.NamedTemporaryFile(suffix='.bc', delete=False)
+    done = tempfile.NamedTemporaryFile(suffix='.bc', delete=False)
+    tmp = tempfile.NamedTemporaryFile(suffix='.bc', delete=False)
+    opt.close()
+    done.close()
+    tmp.close()
+
+    def _optimize(input_file, output_file):
+        retcode = optimize(input_file, output_file, \
+                           use_seaopt, use_seadsa, opt_options)
+        if retcode != 0:
+            sys.stderr.write("ERROR: intra module optimization failed!\n")
+            shutil.copy(input_file, output_file)
+        else:
+            sys.stderr.write("\tintra module optimization finished succesfully\n")
+        return retcode
+
+    ## Only for debugging or tests
+    disable_opt = False
+
+    if disable_opt:
+        shutil.copy(input_file, done.name)
+    else:
+        # Optimize using standard llvm transformations before any other
+        # optional pass. Otherwise, these passes will not be very effective.
+        retcode = _optimize(input_file, done.name)
+        if retcode != 0: return retcode
+
+    if use_seadsa:
+        #devirt_method = 'sea_dsa'
+        devirt_method = 'sea_dsa_with_cha'
+        ### Promote indirect calls to direct calls
+        retcode = devirt(devirt_method, done.name, tmp.name)
+        if retcode != 0:
+            sys.stderr.write("ERROR: resolution of indirect calls failed!\n")
+            shutil.copy(done.name, output_file)
+            return retcode
+        sys.stderr.write("\tresolved indirect calls finished succesfully\n")
+        shutil.copy(tmp.name, done.name)
+
+    if use_crabopt:
+        cmd = utils.get_crabopt()
+        if cmd is None:
+            sys.stderr.write('crabopt not found: skipping ...')
+        else:
+            crabopt_args = ['-Pcrab-enable-warnings=false',
+                            '-Pcrab-log=clam-opt',
+                            '-Pcrab-only-main',
+                            '-Pcrab-print-invariants']
+            crabopt_args += [done.name, '--o={0}'.format(tmp.name)]
+            retcode = driver.run(cmd, crabopt_args)
+            if retcode != 0:
+                sys.stderr.write("ERROR: crabopt failed!\n")
+                shutil.copy(done.name, output_file)
+                return retcode
+            utils.write_timestamp("Finished crabopt")
+            shutil.copy(tmp.name, done.name)
+
+    if use_ipdse:
+        ## 1. Run dead store elimination based on sea-dsa
+        passes = [
+            ## Options for sea-dsa
+            '--sea-dsa=cs', '--sea-dsa-type-aware', '--horn-sea-dsa-split', \
+            ## Options to run ipdse
+            '--ipdse', '--ipdse-only-singleton=true', '-ipdse-max-def-use=200'
+        ]
+        ## 2. perform OCCAM IPSCCP
+        passes += ['-Pipsccp']
+        ## 3. cleanup after IPSCCP
+        passes += ['-globaldce']
+
+        retcode = driver.previrt(done.name, tmp.name, passes)
+        if retcode != 0:
+            sys.stderr.write("ERROR: ipdse failed!\n")
+            shutil.copy(done.name, output_file)
+            #FIXME: unlink files
+            return retcode
+        sys.stderr.write("\tipdse finished succesfully\n")
+        shutil.copy(tmp.name, done.name)
+
+    if policy != 'none':
+        out = ['']
+        iteration = 0
+        while True:
+            ## done.name is the current filename
+
+            iteration += 1
+            if iteration > 1 or use_ipdse:
+                # optimize using standard llvm transformations
+                retcode = _optimize(done.name, opt.name)
+                if retcode != 0:
+                    break
+            else:
+                shutil.copy(done.name, opt.name)
+
+            pass_args = []
+            if use_seadsa:
+                ### always specialize external calls with function pointer parameters
+                ### This pass relies on seadsa so we pass also some sea-dsa options.
+                pass_args += [ '-Pspecialize-extern-call-function-ptr-arg',
+                               # improve precision of sea-dsa by considering types
+                               '-sea-dsa-type-aware']
+                ## If devirt is not run we tell sea-dsa to
+                ## use its call graph
+                ## pass_args += ['-sea-dsa-devirt']
+
+            ### perform specialization using policies
+            pass_args += ['-Ppeval', '-Ppeval-policy={0}'.format(policy), '-Ppeval-opt']
+            if policy == 'bounded':
+                pass_args += ['-Ppeval-max-bounded={0}'.format(max_bounded)]
+
+            progress = driver.previrt_progress(opt.name, tmp.name, pass_args, output=out)
+            sys.stderr.write("\tintra-module specialization finished\n")
+            # forcing inlining of specialized functions if option is enabled
+            force_inline(tmp.name, done.name, False, force_inline_spec)
+            if progress:
+                if log is not None:
+                    log.write(out[0])
+            else:
+                break
+    else:
+        print("\tskipped intra-module specialization")
+
+    shutil.copy(done.name, output_file)
+    try:
+        os.unlink(done.name)
+        os.unlink(opt.name)
+        os.unlink(tmp.name)
+    except OSError:
+        pass
+    return retcode
+
+def optimize(input_file, output_file, use_seaopt, use_seadsa, extra_opts):
+    """ Run LLVM optimizer.
+        The optimizer is tuned for code debloating and not necessarily
+        for runtime performance.
+    """
+    args = ['-disable-simplify-libcalls']
+    ## We disable loop vectorization because some of our analysis
+    ## cannot support them.
+    ## LLVM 10: --disable-loop-vectorization is gone
+    args += ['--disable-slp-vectorization']
+
+    use_seaopt = use_seaopt and utils.found_seaopt()
+    if use_seaopt:
+        # disable sinking instructions to end of basic block
+        # this might create unwanted aliasing scenarios (in sea-dsa)
+        # for now, there is no option to undo this switch
+        #args += ['--simplifycfg-sink-common=false']
+    #if use_seadsa:
+        args += ['--seaopt-use-seadsa-aa']
+        #args += ['--seaopt-use-cfl-aa=both']
+
+    args += extra_opts
+    args += [input_file, '-o', output_file, '-Os']
+    return driver.run(utils.get_opt(use_seaopt), args)
+
+def specialize_program_args(input_file, output_file, \
+                            program_name, static_args, num_dynamic_args, \
+                            filename=None):
+    """ fix the program arguments.
+    """
+    if filename is None:
+        arg_file = tempfile.NamedTemporaryFile(delete=False)
+        arg_file.close()
+        arg_file = arg_file.name
+    else:
+        arg_file = filename
+
+    f = open(arg_file, 'w')
+    # first line the number of dynamic args
+    # second line 0 name
+    # the rest is one line per parameter
+    f.write('{0}\n'.format(num_dynamic_args))
+    f.write('0 {0}\n'.format(program_name))
+    index = 1
+    for x in static_args:
+        f.write('{0} {1}\n'.format(index, x))
+        index += 1
+    f.close()
+
+    args = ['-Pcmdline-spec', '-Pcmdline-spec-input', arg_file]
+
+    driver.previrt(input_file, output_file, args)
+    if filename is None:
+        os.unlink(arg_file)
+
+def config_prime(input_file, output_file, known_args, num_dynamic_args):
+    """
+    Execute the program until a branch condition is unknown.
+    known_args is a list of strings
+    num_dynamic_args is a non-negative number.
+    """
+    ## TODOX: find subset of -O1 that simplify loops for dominance queries
+    args = ['-O1'] # '-loop-simplify', '-simplifycfg'
+    args += ['-Pconfig-prime']
+    index = 0
+    for x in known_args:
+        if index == 0:
+            args.append('-Pconfig-prime-file=\"{0}\"'.format(x))
+        else:
+            args.append('-Pconfig-prime-input-arg=\"{0}\"'.format(x))
+        index += 1
+    args.append('-Pconfig-prime-unknown-args={0}'.format(num_dynamic_args))
+    driver.previrt(input_file, output_file, args)

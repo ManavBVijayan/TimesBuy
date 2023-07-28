@@ -1,0 +1,84 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container-fluid product-detail" style="margin-top: 130px; margin-bottom: 20px;">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="product-detail-title fw-semibold mb-4 text-center">{{ product.name }}</h5>
+                <form method="POST" action="{% url 'edit-product' product.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="model_name" class="form-label">Model Name</label>
+                        <input type="text" class="form-control" id="model_name" name="model_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="model_number" class="form-label">Model Number</label>
+                        <input type="text" class="form-control" id="model_number" name="model_number" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dial_shape" class="form-label">Dial Shape</label>
+                        <input type="text" class="form-control" id="dial_shape" name="dial_shape" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="water_proof" class="form-label">Waterproof</label>
+                        <input type="checkbox" class="form-check-input" id="water_proof" name="water_proof">
+                    </div>
+                    <div class="mb-3">
+                        <label for="touch_screen" class="form-label">Touch Screen</label>
+                        <input type="checkbox" class="form-check-input" id="touch_screen" name="touch_screen">
+                    </div>
+                    <div class="mb-3">
+                        <label for="color" class="form-label">Color</label>
+                        <select class="form-select" id="color" name="color" required>
+                            <option value="" selected disabled>Select color</option>
+                            {% for color in colors %}
+                            <option value="{{ color.id }}">{{ color.color }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Price</label>
+                        <input type="number" class="form-control" id="price" name="price" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="stock" class="form-label">Stock</label>
+                        <input type="number" class="form-control" id="stock" name="stock" required>
+                    </div>
+                   <div class="mb-3">
+                        <label for="images" class="form-label">Images</label>
+                        <input type="file" class="form-control" id="images" name="images" multiple onchange="previewImages(event)">
+                        <div id="image-preview" style="display: flex; flex-wrap: wrap; gap: 10px;padding-top:5px;"></div>
+                    </div>
+                    <button type="submit" class="btn btn-success">Add Variant</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function previewImages(event) {
+    var previewContainer = document.getElementById('image-preview');
+    previewContainer.innerHTML = ''; // Clear previous previews
+
+    var files = event.target.files;
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            var image = document.createElement('img');
+            image.src = e.target.result;
+            image.style.width = '100px';
+            image.style.height = '100px';
+            image.style.objectFit = 'cover';
+
+            previewContainer.appendChild(image);
+        };
+
+        reader.readAsDataURL(file);
+    }
+}
+</script>
+{% endblock %}

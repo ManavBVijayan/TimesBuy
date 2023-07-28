@@ -1,0 +1,68 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container-fluid product-list" style="margin-top: 130px; margin-bottom: 20px;">
+  <div class="container">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="product-list-title fw-semibold mb-4 text-center">PRODUCTS</h5>
+        <div class="table-responsive">
+          <table class="table" style="color:#0B1C39;font-family:'Josefin Sans', sans-serif;">
+            <thead>
+              <tr>
+                <th scope="col">No.</th>
+                <th scope="col">Image</th>
+                <th scope="col">Product ID</th>
+                <th scope="col">Product</th>
+                <th scope="col">Actions</th>
+                <th scope="col">View</th>
+                <th scope="col">Edit</th> <!-- Added column for Edit option -->
+              </tr>
+            </thead>
+            <tbody>
+              {% for product in products %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>
+                  {% with variant=product.productvariant_set.first %}
+                  {% if variant %}
+                  {% with image=variant.images.first %}
+                  {% if image %}
+                  <img src="{{ image.image.url }}" alt="{{ product.name }} Image" width="100" height="100">
+                  {% else %}
+                  <!-- Handle case when no images exist for the variant -->
+                  <img src="{% static 'placeholder-image.png' %}" alt="{{ product.name }} Image" width="100" height="100">
+                  {% endif %}
+                  {% endwith %}
+                  {% else %}
+                  <!-- Handle case when no variants exist for the product -->
+                  <img src="{% static 'placeholder-image.png' %}" alt="{{ product.name }} Image" width="100" height="100">
+                  {% endif %}
+                  {% endwith %}
+                </td>
+                <td>{{ product.id }}</td>
+                <td>{{ product.name }}</td>
+                <td>
+                  {% if product.is_active %}
+                  <a href="{% url 'disable-product' product.id %}" class="text-center btn btn-sm" style="color:white;font-family:'Josefin Sans', sans-serif;background-color:#FF2020;">DISABLE</a>
+                  {% else %}
+                  <a href="{% url 'enable-product' product.id %}" class="text-center btn btn-sm" style="color:white;font-family:'Josefin Sans', sans-serif;background-color:#0B1C39;">ENABLE</a>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{% url 'product-view' product.id %}" class="text-center btn btn-sm" style="color:white;font-family:'Josefin Sans', sans-serif;background-color:#0B1C39;">VIEW</a>
+                </td>
+                <td>
+                  <a href="{% url 'edit-product' product.id %}" class="text-center btn btn-sm" style="color:white;font-family:'Josefin Sans', sans-serif;background-color:#0B1C39;">EDIT</a>
+                </td> <!-- Added Edit button -->
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
