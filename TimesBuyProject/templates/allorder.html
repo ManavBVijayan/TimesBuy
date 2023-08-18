@@ -2,37 +2,112 @@
 {% load static %}
 
 {% block body %}
-<div class="container-fluid" style="margin-top: 130px; margin-bottom: 20px;">
-  <h1>All Orders</h1>
-  <table class="table table-bordered table-striped">
-    <thead>
-      <tr>
-        <th>Order ID</th>
-        <th>User</th>
-        <th>Total Price</th>
-        <th>Payment Status</th>
-        <th>Payment Method</th>
-        <th>Order Date</th>
-        <th>Delivery Date</th>
-        <th>Action</th> <!-- New column for the View button -->
-      </tr>
-    </thead>
-    <tbody>
-      {% for order in orders %}
-      <tr>
-        <td>{{ order.id }}</td>
-        <td>{{ order.user.username }}</td>
-        <td>{{ order.total_price }}</td>
-        <td>{{ order.payment_status }}</td>
-        <td>{{ order.payment_method }}</td>
-        <td>{{ order.order_date }}</td>
-        <td>{{ order.delivery_date }}</td>
-        <td> <!-- Add the View button link -->
-          <a href="{% url 'admin_order_view' order.id %}" class="btn btn-primary btn-sm">View</a>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+<style>
+  .container-fluid {
+    margin-top: 130px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 768px) {
+    /* Adjust table font size and cell padding for small screens */
+    .table {
+      font-size: 14px;
+    }
+    .table th,
+    .table td {
+      padding: 8px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    /* Further reduce font size and add word-wrap */
+    .table {
+      font-size: 12px;
+    }
+    .table th,
+    .table td {
+      word-wrap: break-word;
+    }
+  }
+
+  /* Set background color for table columns */
+  .table th,
+  .table td {
+    background-color: white;
+  }
+</style>
+<section style="background-color: lightgray; font-family: 'Josefin Sans', sans-serif">
+  <div class="container" style="margin-top: 120px;">
+    <h1 class="text-center" style="color: #0B1C39;"><b>ALL ORDERS</b></h1>
+    <div class="table-container">
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>User</th>
+              <th>Total Price</th>
+              <th>Order Status</th>
+              <th>Payment Status</th>
+              <th>Payment Method</th>
+              <th>Order Date</th>
+              <th>Delivery Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in page_obj %}
+            <tr>
+              <td>{{ order.id }}</td>
+              <td>{{ order.user.username }}</td>
+              <td>{{ order.total_price }}</td>
+              <td>{{ order.order_status }}</td>
+              <td>{{ order.payment_status }}</td>
+              <td>{{ order.payment_method }}</td>
+              <td>{{ order.order_date|date:"d F Y" }}</td>
+              {% if order.delivery_date %}
+              <td>{{ order.delivery_date|date:"d F Y" }}</td>
+              {% else %}
+              <td>TBD</td>
+              {%  endif %}
+              <td>
+                <a href="{% url 'admin_order_view' order.id %}" class="btn btn-primary btn-sm">View</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination links -->
+    {% if page_obj.has_other_pages %}
+    <nav class="d-flex justify-content-center mt-4">
+      <ul class="pagination">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page=1">First</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% endif %}
+        {% for i in page_obj.paginator.page_range %}
+        <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+          <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+        </li>
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+  </div>
+</section>
 {% endblock %}

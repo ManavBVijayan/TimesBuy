@@ -13,19 +13,47 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
+
 <!--    <script src="https://kit.fontawesome.com/a076d05399.js"></script>-->
 
     <title>{% block title %}{% endblock %}</title>
+  <style>
+    /* Default styles for larger screens */
+.navbar-nav {
+  display: flex;
+  flex-direction: row;
+}
+
+/* Media query for mobile devices */
+@media (max-width: 767px) {
+  .navbar-nav {
+    flex-direction: column; /* Display links in a column */
+  }
+}
+/* Media query for mobile devices */
+@media (max-width: 767px) {
+  .custom-navbar.show {
+    z-index: 1030; /* Ensure the navbar is above other content */
+    position: relative; /* Reset the positioning to "relative" */
+  }
+}
+@media (max-width: 767px) {
+  .custom-collapse.show {
+    background-color: blue; /* Adjust the background color as needed */
+  }
+}
+
+  </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg fixed-top" style="height: 120px">
+<nav class="navbar navbar-expand-lg fixed-top custom-navbar" style="height: 120px">
   <div class="container">
     <a class="navbar-brand" href="#"><img src="{% static 'images/logo1.png' %}" alt="Logo" style="width: auto; height: 100px;"></a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation" id="mobileMenuToggle">
+        <span class="navbar-toggler-icon" ><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M0 416c0 17.7 14.3 32 32 32l54.7 0c12.3 28.3 40.5 48 73.3 48s61-19.7 73.3-48L480 448c17.7 0 32-14.3 32-32s-14.3-32-32-32l-246.7 0c-12.3-28.3-40.5-48-73.3-48s-61 19.7-73.3 48L32 384c-17.7 0-32 14.3-32 32zm128 0a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zM320 256a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm32-80c-32.8 0-61 19.7-73.3 48L32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l246.7 0c12.3 28.3 40.5 48 73.3 48s61-19.7 73.3-48l54.7 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-54.7 0c-12.3-28.3-40.5-48-73.3-48zM192 128a32 32 0 1 1 0-64 32 32 0 1 1 0 64zm73.3-64C253 35.7 224.8 16 192 16s-61 19.7-73.3 48L32 64C14.3 64 0 78.3 0 96s14.3 32 32 32l86.7 0c12.3 28.3 40.5 48 73.3 48s61-19.7 73.3-48L480 128c17.7 0 32-14.3 32-32s-14.3-32-32-32L265.3 64z"/></svg></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <div class="collapse navbar-collapse" id="navbarSupportedContent" style="background-color:white;">
       <ul class="navbar-nav">
         <li class="nav-item">
           <a class="nav-link" href="{% url 'home' %}">Home</a>
@@ -58,35 +86,30 @@
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="couponsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Coupons</a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="couponsDropdown">
-            <li><a class="dropdown-item" href="#">Coupons List</a></li>
+            <li><a class="dropdown-item" href="{% url 'view_coupon' %}">Coupons List</a></li>
             <div class="dropdown-divider"></div>
-            <li><a class="dropdown-item" href="#">Add Coupons</a></li>
+            <li><a class="dropdown-item" href="{% url 'add_coupon' %}">Add Coupons</a></li>
           </ul>
         </li>
-      </ul>
-
-      <!-- Admin name and sign out button -->
-      <div class="d-flex mx-auto align-items-center">
-        <div class="dropdown">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="brandDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Brands & Banners</a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="categoryDropdown">
+            <li><a class="dropdown-item" href="{% url 'list-all-brands' %}"> Brands</a></li>
+            <div class="dropdown-divider"></div>
+            <li><a class="dropdown-item" href="{% url 'list-banners' %}">Banners</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" id="adminDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-person-circle"></i> {{ admin_name }}
+            <i class="bi bi-person-circle"></i> {{ user.username }}
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
             <li><a class="dropdown-item" href="#">Profile</a></li>
             <div class="dropdown-divider"></div>
             <li><a class="dropdown-item" href="{% url 'admin-logout' %}">Sign Out</a></li>
           </ul>
-        </div>
-      </div>
-
-      <form class="d-flex">
-        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-        <button class="btn" type="submit">
-          <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
-            <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
-          </svg>
-        </button>
-      </form>
+        </li>
+      </ul>
     </div>
   </div>
 </nav>

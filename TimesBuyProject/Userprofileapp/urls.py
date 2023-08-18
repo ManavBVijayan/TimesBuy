@@ -10,4 +10,5 @@ urlpatterns = [
     path('address/choose/<int:address_id>/', views.choose_delivery_address, name='choose_delivery_address'),
     path('view_wallet/', views.view_wallet, name='view_wallet'),
     path('change_password/', views.change_password_view, name='change_password'),
+    path('soft_delete_transaction/<int:transaction_id>/', views.soft_delete_transaction, name='soft_delete_transaction'),
 ]

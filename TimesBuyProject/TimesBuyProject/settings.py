@@ -84,7 +84,7 @@ WSGI_APPLICATION = 'TimesBuyProject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'timesbuydatabase',
+        'NAME': 'timesbuyfinaldb',
         'USER': 'postgres',
         'PASSWORD' : 'manav12',
         'HOST' : 'localhost',
@@ -116,11 +116,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
 USE_TZ = True
+TIME_ZONE = 'Asia/Kolkata'
+
 
 
 # Static files (CSS, JavaScript, Images)
@@ -148,6 +146,10 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 RAZOR_KEY_ID='rzp_test_98XGYT9co5eC5l'
 RAZOR_KEY_SECRET='b46k91t5lEgC2CP5XXM5DHUA'
+
+TWILIO_ACCOUNT_SID='ACab4eac82fd92250f10aeb7c6f4ec8f75'
+TWILIO_AUTH_TOKEN='a00c267353f3d42ee9aad9fae3c0d755'
+TWILIO_PHONE_NUMBER='+13135138891'
 
 
 

@@ -7,7 +7,7 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="product-detail-title fw-semibold mb-4 text-center">{{ product.name }}</h5>
-                <form method="POST" action="{% url 'edit-product' product.id %}">
+                <form method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="model_name" class="form-label">Model Name</label>
@@ -46,10 +46,10 @@
                         <label for="stock" class="form-label">Stock</label>
                         <input type="number" class="form-control" id="stock" name="stock" required>
                     </div>
-                   <div class="mb-3">
-                        <label for="images" class="form-label">Images</label>
+                   <div class="form-group">
+                        <label for="images" style="margin-bottom: 10px;">Images</label>
                         <input type="file" class="form-control" id="images" name="images" multiple onchange="previewImages(event)">
-                        <div id="image-preview" style="display: flex; flex-wrap: wrap; gap: 10px;padding-top:5px;"></div>
+                        <div id="image-preview" style="display: flex; flex-wrap: wrap; gap: 10px; padding-top: 10px;"></div>
                     </div>
                     <button type="submit" class="btn btn-success">Add Variant</button>
                 </form>

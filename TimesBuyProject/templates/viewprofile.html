@@ -1,8 +1,49 @@
 {% extends 'base.html' %}
-
 {% block body %}
 {% load static %}
+<style>
+  .green-mark {
+    color: green;
+  }
 
+  .red-mark {
+    color: red;
+  }
+  .table-wrapper {
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        .table-wrapper table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+        }
+
+        .table-wrapper th,
+        .table-wrapper td {
+            padding: 8px;
+            text-align: left;
+        }
+  @media (max-width: 767px) {
+    /* Adjust the font size and spacing for smaller screens */
+    body {
+      font-size: 12px;
+
+    }
+    .btn{
+    font-size:12px
+    }
+
+    /* Center align card title */
+    .card-title {
+      text-align: center;
+    }
+
+    /* Reduce padding for card body */
+
+  }
+</style>
 <section style="background-color: #f5f5f5; font-family: 'Josefin Sans', sans-serif;">
    <div class="container-fluid" style=" background-color: #0B1C39; margin-bottom: 10px; font-family: 'Josefin Sans', sans-serif; font-size: 64px; text-align: center;">
       <div style="color: white; font-weight: bold;">
@@ -40,7 +81,7 @@
                 <a href="{% url 'view_wallet' %}" style="text-decoration: none; color: {% if tab == 'wallet' %}white{% else %}#FF2020{% endif %};">Wallet</a>
               </li>
             </ul>
-            <div class="d-flex justify-content-center mb-2">
+            <div class="d-flex justify-content-center mt-3 mb-2">
               <a href="" class="btn btn-dark" style="background-color: #0B1C39; width: 100px; border-radius: 5px;">Logout</a>
             </div>
           </div>
@@ -146,46 +187,146 @@
                     <h5 class="product-list-title fw-semibold mb-4 text-center">PRODUCTS</h5>
                     <div class="table-responsive">
                         {% if orders %}
-                      <table class="table" style="color:#0B1C39;font-family:'Josefin Sans', sans-serif;">
-                               <thead>
-                                  <tr>
-                                     <th scope="col">Order Id</th>
-                                     <th scope="col">Order Status</th>
-                                     <th scope="col">Payment Method</th>
-                                     <th scope="col">Order Date</th>
-                                     <th scope="col">Delivery Date</th>
-                                     <th scope="col">Action</th>
-                                  </tr>
-                               </thead>
-                               <tbody>
-                                  {% for order in orders %}
-                                  <tr>
-                                     <td>{{ order.id }}</td>
-                                     <td>{{ order.payment_status }}</td>
-                                     <td>{{ order.payment_method }}</td>
-                                     <td>{{ order.order_date }}</td>
-                                     <td>{{ order.delivery_date }}</td>
-                                     <td>
-                                        <div class="btn">
-                                            <a href="{% url 'order_detail' order_id=order.id %}" class="btn btn-primary">View</a>
-                                        </div>
-                                     </td>
-                                  </tr>
-                                  {% endfor %}
-                               </tbody>
+                            <table class="table" style="color:#0B1C39;font-family:'Josefin Sans', sans-serif;">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Order Id</th>
+                                        <th scope="col">Order Status</th>
+                                        <th scope="col">Payment Method</th>
+                                        <th scope="col">Order Date</th>
+                                        <th scope="col">Delivery Date</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in orders %}
+                                    <tr>
+                                        <td>{{ order.id }}</td>
+                                        <td>{{ order.order_status }}</td>
+                                        <td>{{ order.payment_method }}</td>
+                                        <td>{{ order.order_date |date:"d F Y"}}</td>
+                                        {% if order.delivery_date is None %}
+                                        <td>None</td>
+                                        {% else %}
+                                        <td>{{ order.delivery_date |date:"d F Y" }}</td>
+                                        {% endif %}
+                                        <td>
+                                            <div class="btn">
+                                                <a href="{% url 'order_detail' order_id=order.id %}" class="btn btn-primary">View</a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
                             </table>
-                            {% else %}
-                            <p>No orders found.</p>
+
+                            <!-- Pagination Controls -->
+                            {% if orders.has_other_pages %}
+                                <nav class="d-flex justify-content-center mt-4">
+                                    <ul class="pagination">
+                                        {% if orders.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1">First</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_orders.previous_page_number }}">Previous</a>
+                                        </li>
+                                        {% endif %}
+                                        {% for i in orders.paginator.page_range %}
+                                        <li class="page-item {% if page_orders.number == i %}active{% endif %}">
+                                            <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                                        </li>
+                                        {% endfor %}
+                                        {% if orders.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_orders.next_page_number }}">Next</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_orders.paginator.num_pages }}">Last</a>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
                             {% endif %}
-                         </div>
-                      </div>
+                        {% else %}
+                            <p>No orders found.</p>
+                        {% endif %}
+                    </div>
+                </div>
             {% elif tab == 'wallet' %}
-              <div class="card-body">
+             <div class="card-body">
                 <h5 class="card-title">Wallet Details</h5>
                 <p>Username: {{ wallet.user.username }}</p>
                 <p>Balance: {{ wallet.balance }}</p>
                 <!-- Add other wallet details if needed -->
-              </div>
+
+                <h5 class="card-title">Transaction History</h5>
+                <div class="table-wrapper">
+                    {% if transactions %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Credited/Debited</th>
+                                <th>Order ID</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions %}
+                            <tr>
+                                <td>{{ transaction.date }}</td>
+                                <td>{{ transaction.amount }}</td>
+                                <td>
+                                    {% if transaction.transaction_type == 'Cancelled' or transaction.transaction_type == 'Return' %}
+                                    <span class="text-success">Credited ++</span>
+                                    {% elif transaction.transaction_type == 'Purchased' %}
+                                    <span class="text-danger">Debited --</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ transaction.order_id.id }}-{{ transaction.get_transaction_type_display }}</td>
+                                <td>
+                                    <form method="post" action="{% url 'soft_delete_transaction' transaction.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-warning btn-sm">Soft Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <!-- Pagination links -->
+                    <nav class="d-flex justify-content-center mt-4">
+                        <ul class="pagination">
+                            {% if transactions.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ transactions.previous_page_number }}">Previous</a>
+                            </li>
+                            {% endif %}
+                            {% for i in transactions.paginator.page_range %}
+                            <li class="page-item {% if transactions.number == i %}active{% endif %}">
+                                <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                            </li>
+                            {% endfor %}
+                            {% if transactions.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ transactions.next_page_number }}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ transactions.paginator.num_pages }}">Last</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% else %}
+                    <p class="text-center">No transactions found.</p>
+                    {% endif %}
+                </div>
+            </div>
             {% endif %}
           </div>
         </div>
@@ -216,5 +357,7 @@
 }
 
 </style>
+
+
 {% endblock %}
 

@@ -54,11 +54,47 @@
   .order-summary button {
     margin-top: 10px;
   }
+  @media (max-width: 767px) {
+    .checkout-container {
+      padding: 10px;
+    }
+    .address-card {
+      height: auto;
+    }
+    .order-summary {
+      margin-top: 20px;
+    }
+    .order-summary span {
+      display: block;
+      width: auto;
+    }
+    .order-summary button {
+      margin-top: 20px;
+    }
+  }
+
+  @media (max-width: 575px) {
+    .address-card .btn-choose {
+      width: 20px;
+      height: 20px;
+      font-size: 10px;
+    }
+    .order-summary {
+      padding: 5px;
+    }
+    .order-summary span {
+      width: auto;
+    }
+    .order-summary button {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+  }
 </style>
 
 <div class="container-fluid checkout-container">
   <div class="row justify-content-center">
-    <div class="col-12 text-center" style="color: white; font-weight: bold; margin-bottom: 10px;font-family: 'Josefin Sans', sans-serif; font-size: 64px; text-align: center;">
+    <div class="col-12 text-center" style="color: white; font-weight: bold; margin-bottom: 10px;font-family: 'Josefin Sans', sans-serif; font-size: 3rem; text-align: center;">
       CHECK<span style="text-transform: uppercase; color: #FF2020;">out</span>
     </div>
   </div>
@@ -83,8 +119,8 @@
     </div>
   </div>
 {% endfor %}
-
-<div class="row container">
+<div class="container">
+<div class=" row ">
   <!-- Address Section -->
   <div class="col-md-8">
     <div class="text-uppercase text-center" style="color: #FF2020; background-color: #0B1C39; font-size: 34px; font-weight: bold; padding: 10px;">
@@ -93,7 +129,7 @@
     <div class="row">
       {% for address in addresses %}
 
-      <div class="col-md-4">
+      <div class="col-md-6">
         <div class="address-card">
           {% if address.is_delivery_address %}
           <div class="mb-3">
@@ -161,13 +197,19 @@
         <label for="upi">UPI</label>
         <input type="radio" name="paymentOption" id="cod" value="cod">
         <label for="cod">Cash on Delivery</label>
-        <br>
-        <button class="btn btn-block" id="proceedBtn" style="background-color:#0B1C39; color:white;">Proceed to Payment</button>
-    </div>
-    {% endif %}
+        {% if wallet_amount >= total_price %}
+            <input type="radio" name="paymentOption" id="puw" value="puw">
+            <label for="puw">Pay Using Wallet</label>
+          {% else %}
+            <p style="color:gray;">Your wallet amount ₹ {{ wallet_amount }} is not enough to cover the total price ₹ {{ total_price }}.</p>
+          {% endif %}
+              <button class="btn btn-block" id="proceedBtn" style="background-color:#0B1C39; color:white;">Proceed to Payment</button>
+          </div>
+          {% endif %}
   </div>
 </div>
 
+</div>
 </div>
 </div>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -267,18 +309,23 @@ document.getElementById("proceedBtn").addEventListener("click", function () {
 
 
     if (paymentOption === "cod") {
-      // Code for Cash on Delivery
-      window.location.href = "{% url 'placeorder' selected_address.id  %}";
-      console.log("Cash on Delivery selected");
+      var confirmCashOnDelivery = confirm("Are you sure you want to proceed with Cash on Delivery?");
+            if (confirmCashOnDelivery) {
+                window.location.href = "{% url 'placeorder' selected_address.id  %}";
+            } else {
+                console.log("Cash on Delivery canceled");
+            }
     } else if (paymentOption === "upi") {
       // Code for Razorpay
       initiateRazorpayPayment();
       console.log("Pay Using Razorpay selected");
-    } else if (paymentOption === "PUW") {
-      // Code for Pay Using Wallet\
-      alert("Your Paying using wallet");
-      window.location.href = "{% url 'pay_wallet' selected_address.id %}";
-      console.log("Pay Using Wallet selected");
+    } else if (paymentOption === "puw") {
+      var confirmWalletPayment = confirm("Are you sure you want to pay using your wallet?");
+            if (confirmWalletPayment) {
+                window.location.href = "{% url 'pay_wallet' selected_address.id %}";
+            } else {
+                console.log("Wallet payment canceled");
+            }
     }
   });
 </script>

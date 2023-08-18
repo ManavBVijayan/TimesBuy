@@ -2,8 +2,31 @@
 {% load static %}
 
 {% block body %}
-<section style="background-color: lightgray;">
-  <div class="container" >
+
+<style>
+    .pagination .page-link {
+        color: #fff;
+        background-color: #0B1C39;
+        border-color: #fff;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #FF2020;
+        border-color: #FF2020;
+    }
+
+    .pagination .page-link:hover {
+        background-color: #FF2020;
+        border-color: #FF2020;
+    }
+    label.selected {
+        color: #FF2020; /* Change this to the desired color */
+        font-weight: bold;
+    }
+</style>
+
+<section style="background-color: lightgray;font-family: 'Josefin Sans', sans-serif">
+  <div class="container">
     <div class="row">
       <div class="col-md-4 col-lg-3" style="padding-top:20px">
         <!-- Category Table -->
@@ -30,79 +53,184 @@
         </table>
       </div>
 
-      <div class="col-md-8 col-lg-9">
-        <!-- Banner Image -->
-        <div class="banner-image">
-          <img src="{% static 'images/homebanner.jpg' %}" alt="Vertical Image" style="object-fit: cover; width: 100%; height: 100%;">
-        </div>
-      </div>
+<!--      <div class="col-md-8 col-lg-9 ">-->
+<!--        &lt;!&ndash; Banner Image &ndash;&gt;-->
+<!--        <div class="banner-image">-->
+<!--          <img src="{% static 'images/homebanner.jpg' %}" alt="Vertical Image" style="object-fit: cover;height:500px;width:1050px;">-->
+<!--        </div>-->
+<!--      </div>-->
     </div>
   </div>
 </section>
 
-
-<section style="background-color: lightgray; padding-top: 10px;">
+<section style="background-color: lightgray; padding-top: 10px; font-family: 'Josefin Sans', sans-serif">
   <div class="product-title">
-    {{ current_category }}
-  </div>
+      {{ title }}
+    </div>
 
   <div class="container" style="padding-top: 10px">
     <div class="row">
       <div class="col-md-3 col-sm-12">
         <!-- Filteration Table -->
-        <table class="filteration-table">
-          <thead>
-            <tr>
-              <th>Filter Options</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <input type="checkbox" id="option1" name="option" value="Option 1">
-                <label for="option1">Option 1</label>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <input type="checkbox" id="option2" name="option" value="Option 2">
-                <label for="option2">Option 2</label>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <input type="checkbox" id="option3" name="option" value="Option 3">
-                <label for="option3">Option 3</label>
-              </td>
-            </tr>
-            <!-- Add more filter options as needed -->
-          </tbody>
-        </table>
-      </div>
-      <div class="col-md-9">
-        <div class="row">
-          {% for product in products %}
-            <div class="col-md-4">
-              <div class="card">
-                <a href="{% url 'product_detail' slug=product.slug %}">
-                  {% if product.productvariant_set.all.0.images.all %}
-                    <img src="{{ product.productvariant_set.all.0.images.all.0.image.url }}" alt="{{ product.name }}" class="card-img-top">
-                  {% else %}
-                    <!-- Add a placeholder image if no image is available -->
-                    <img src="{% static 'images/placeholder.jpg' %}" alt="Placeholder" class="card-img-top">
-                  {% endif %}
-                </a>
-                <div class="card-body">
-                  <h5 class="card-title">{{ product.name }}</h5>
-                  <p class="card-text">Price: {{ product.productvariant_set.all.0.price }}</p>
-                  <!-- Display more details as needed -->
-                </div>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-      </div>
+        <form method="get" action="{% url 'shop' %}">
+            {% csrf_token %}
 
+            <!-- Filter By Brands -->
+            <table class="filteration-table">
+                <thead>
+                    <tr>
+                        <th>Filter By Brands</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <input type="checkbox" id="brand_all" name="brand" value="all"
+                                {% if 'all' in selected_brands %}checked{% endif %}>
+                            <label for="brand_all">All Brands</label>
+                        </td>
+                    </tr>
+                    {% for brand in brands %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" id="brand_{{ brand.pk }}" name="brand" value="{{ brand.pk }}"
+                                    {% if brand.pk|stringformat:"s" in selected_brands %}checked{% endif %}>
+                                <label for="brand_{{ brand.pk }}">{{ brand.name }}</label>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Filter By Color -->
+            <table class="filteration-table">
+                <thead>
+                    <tr>
+                        <th>Filter By Color</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for color in distinct_colors %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" id="color_{{ color.pk }}" name="colors[]" value="{{ color.pk }}"
+                                {% if color.pk|stringformat:"s" in selected_colors %}checked{% endif %}>
+                            <label for="color_{{ color.pk }}">{{ color.color }}</label>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Filter By Price -->
+            <!-- Filter By Price -->
+<table class="filteration-table">
+    <thead>
+        <tr>
+            <th>Filter By Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                <input type="radio" id="price_1" name="price_range" value="0-2000"
+                    {% if selected_price_range == '0-2000' %}checked{% endif %}>
+                <label for="price_1">Below 2000</label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="radio" id="price_2" name="price_range" value="2000-5000"
+                    {% if selected_price_range == '2000-5000' %}checked{% endif %}>
+                <label for="price_2">2000 - 5000</label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="radio" id="price_3" name="price_range" value="5000-15000"
+                    {% if selected_price_range == '5000-15000' %}checked{% endif %}>
+                <label for="price_3">5000 - 15000</label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="radio" id="price_4" name="price_range" value="15000-30000"
+                    {% if selected_price_range == '15000-30000' %}checked{% endif %}>
+                <label for="price_4">15000 - 30000</label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="radio" id="price_5" name="price_range" value="30000"
+                    {% if selected_price_range == '30000' %}checked{% endif %}>
+                <label for="price_5">30000+</label>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+
+            <button type="submit" style="margin-bottom:20px;">Submit</button>
+        </form>
+
+    </div>
+        <div class="col-md-9">
+            <div class="row">
+                {% for variant in page_variants %}
+                    {% with product=variant.product %}
+                        <div class="col-md-4 my-3">
+                            <div class="card">
+                                <a href="{% url 'product_detail' slug=product.slug %}">
+                                    {% if variant.images.all %}
+                                        <img src="{{ variant.images.all.0.image.url }}" alt="{{ product.name }}" class="card-img-top">
+                                    {% else %}
+                                        <img src="{% static 'images/placeholder.jpg' %}" alt="Placeholder" class="card-img-top">
+                                    {% endif %}
+                                </a>
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ product.name }}</h5>
+                                    {% if variant.offer_price is not None %}
+                                        <p class="card-text">
+                                            <del><span class="original-price">₹{{ variant.price }}</span></del>
+                                            <span class="offer-price">
+                                                 ₹{{ variant.offer_price }}
+                                            </span>
+                                        </p>
+                                    {% else %}
+                                        <p class="card-text">₹{{ variant.price }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endwith %}
+                {% empty %}
+                    <div class="col-md-12">
+                        <div class="no-products-message mx-auto my-auto">
+                            <p>No products available.</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            {% if page_variants.has_other_pages %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_variants.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?category={{ category_id }}&brand={{ brand_id }}&colors={{ selected_colors|join:',' }}&page=1">First</a></li>
+                            <li class="page-item"><a class="page-link" href="?category={{ category_id }}&brand={{ brand_id }}&colors={{ selected_colors|join:',' }}&page={{ page_variants.previous_page_number }}">Previous</a></li>
+                        {% endif %}
+                        {% for num in page_variants.paginator.page_range %}
+                            <li class="page-item {% if num == page_variants.number %}active{% endif %}">
+                                <a class="page-link" href="?category={{ category_id }}&brand={{ brand_id }}&colors={{ selected_colors|join:',' }}&page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endfor %}
+                        {% if page_variants.has_next %}
+                            <li class="page-item"><a class="page-link" href="?category={{ category_id }}&brand={{ brand_id }}&colors={{ selected_colors|join:',' }}&page={{ page_variants.next_page_number }}">Next</a></li>
+                            <li class="page-item"><a class="page-link" href="?category={{ category_id }}&brand={{ brand_id }}&colors={{ selected_colors|join:',' }}&page={{ page_variants.paginator.num_pages }}">Last</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
     </div>
   </div>
 </section>

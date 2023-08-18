@@ -1,0 +1,65 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container-fluid brand-list" style="margin-top: 130px; margin-bottom: 20px;">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="brand-list-title fw-semibold mb-4 text-center">BRANDS</h5>
+                <div class="table-responsive">
+                    <table class="table" style="color:#0B1C39;font-family:'Josefin Sans', sans-serif;">
+                        <thead>
+                            <tr>
+                                <th scope="col">No.</th>
+                                <th scope="col">Image</th>
+                                <th scope="col">Brand</th>
+                                <th scope="col">Offer Title</th>
+                                <th scope="col">Offer Percentage</th>
+                                <th scope="col">Offer Status</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for brand in brands %}
+                            <tr>
+                                <th scope="row">{{ brand.id }}</th>
+                                <td>
+                                    <img src="{{ brand.image.url }}" alt="{{ brand.name }} Image" class="img-fluid" width="100"
+                                        height="100">
+                                </td>
+                                <td>{{ brand.name }}</td>
+                                <td>{{ brand.offer_title }}</td>
+                                <td>{{ brand.offer_percentage }}%</td>
+                                <td>
+                                    {% if brand.offer_is_active %}
+                                        Active
+                                    {% else %}
+                                        Inactive
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <a href="{% url 'edit-brand' brand.id %}" class="btn btn-warning btn-sm mr-2">EDIT</a>
+                                        {% if brand.is_active %}
+                                        <a href="{% url 'brand-disable' brand.id %}"
+                                            class="btn btn-danger btn-sm">DISABLE</a>
+                                        {% else %}
+                                        <a href="{% url 'brand-enable' brand.id %}"
+                                            class="btn btn-primary btn-sm">ENABLE</a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'add-brand' %}" class="btn btn-success">Add Brand</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

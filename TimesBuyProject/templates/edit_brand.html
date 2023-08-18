@@ -1,0 +1,61 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container-fluid" style="margin-top: 130px; margin-bottom: 20px; font-family: 'Josefin Sans', sans-serif;">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title fw-semibold mb-4">EDIT BRAND</h5>
+                <div class="card">
+                    <div class="card-body">
+                        <form action="{% url 'edit-brand' brand.id %}" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="id_name" class="form-label">Brand name</label>
+                                <input type="text" class="form-control" id="id_name" name="name" value="{{ brand.name }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_image" class="form-label">Image</label>
+                                <input type="file" class="form-control" id="id_image" name="image" onchange="previewImage(event)">
+                                <img id="preview" src="{{ brand.image.url }}" alt="Brand Image Preview" width="100" height="100" style="padding-top: 5px;">
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="id_is_active" name="is_active" {% if brand.is_active %}checked{% endif %}>
+                                <label class="form-check-label" for="id_is_active">Brand is Active</label>
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_offer_title" class="form-label">Offer Title</label>
+                                <input type="text" class="form-control" id="id_offer_title" name="offer_title" value="{{ brand.offer_title }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_offer_percentage" class="form-label">Offer Percentage</label>
+                                <input type="number" class="form-control" id="id_offer_percentage" name="offer_percentage" value="{{ brand.offer_percentage }}">
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="id_offer_is_active" name="offer_is_active" {% if brand.offer_is_active %}checked{% endif %}>
+                                <label class="form-check-label" for="id_offer_is_active">Offer is Active</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function previewImage(event) {
+        var input = event.target;
+        var reader = new FileReader();
+
+        reader.onload = function() {
+            var imgElement = document.getElementById('preview');
+            imgElement.src = reader.result;
+        };
+
+        reader.readAsDataURL(input.files[0]);
+    }
+</script>
+
+{% endblock %}

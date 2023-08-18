@@ -3,9 +3,28 @@
 {% load static %}
 
 <div class="bg0 p-t-75 p-b-85">
-  <div class="container" style="margin-top: 130px; margin-bottom: 20px;">
+  <div class="container" style="margin-top: 10px; margin-bottom: 20px;">
     <div class="row">
+         {% for msg in messages %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                     {% if msg.tags == 'error' %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                      {% elif msg.tags == 'success' %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                      {% else %}
+                            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                      {% endif %}
+                        {{ msg }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
       <div class="col-md-12 mb-4 d-flex justify-content-center">
+
         <div class="card mb-4 bg-secondary-subtle">
           <div class="card-header d-flex justify-content-center py-3" style="color:white; background-color: #0B1C39; margin-bottom: 10px; font-family: 'Josefin Sans', sans-serif; font-size: 34px; text-align: center;">
             Add Address
@@ -65,13 +84,21 @@
               <div class="form-outline mb-4">
                 <input type="number" id="phone" class="form-control" name="phone" placeholder="Mobile Number" required />
               </div>
-              <div class="form-check mb-4">
-                <input class="form-check-input" type="checkbox" id="is_delivery_address" name="is_delivery_address" value="true">
-                <label class="form-check-label" for="is_delivery_address">
-                  Set as Delivery Address
-                </label>
-              </div>
-
+              {% if first_time_address %}
+<div class="form-check mb-4">
+    <input class="form-check-input" type="checkbox" id="is_delivery_address" name="is_delivery_address" value="true" checked disabled>
+    <label class="form-check-label" for="is_delivery_address">
+      Set as Delivery Address
+    </label>
+</div>
+{% else %}
+<div class="form-check mb-4">
+    <input class="form-check-input" type="checkbox" id="delivery_address" name="is_delivery_address" value="true">
+    <label class="form-check-label" for="delivery_address">
+      Set as Delivery Address
+    </label>
+</div>
+{% endif %}
               <!-- Checkbox -->
               <div class="form-group d-flex justify-content-center mb-2">
                 <button type="submit" class="btn btn-success px-5 py-2">

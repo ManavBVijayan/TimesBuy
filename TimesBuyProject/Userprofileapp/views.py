@@ -1,12 +1,16 @@
+import re
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.http import HttpResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.contrib import messages
-from .models import UserAddress,Wallet
+from .models import UserAddress,Wallet,WalletTransaction
 from Cartapp.models import Cart
 from django.contrib.auth import update_session_auth_hash
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
+from django.urls import reverse
+from django.shortcuts import redirect
 @login_required
 def profile_view(request):
     user = request.user
@@ -50,6 +54,9 @@ def show_address(request):
 
 @login_required
 def add_address(request):
+    # Check if the user has any existing addresses
+    has_existing_addresses = UserAddress.objects.filter(user=request.user).exists()
+
     if request.method == 'POST':
         first_name = request.POST['fname']
         last_name = request.POST['lname']
@@ -63,10 +70,19 @@ def add_address(request):
         email = request.POST['email']
 
         is_delivery_address = request.POST.get('is_delivery_address', False) == 'true'
-
-
         if is_delivery_address:
             UserAddress.objects.filter(user=request.user).update(is_delivery_address=False)
+
+        if not has_existing_addresses:
+            is_delivery_address = True
+        if not re.match(r'^\d{10}$', phone_number):
+            messages.error(request, 'Invalid phone number. Phone number must contain 10 digits.')
+            return redirect('add_address')
+
+        if phone_number.startswith('0'):
+            messages.error(request, 'Invalid phone number. Phone number cannot start with zero.')
+            return redirect('add_address')
+
 
         address = UserAddress(
             user=request.user,
@@ -83,6 +99,11 @@ def add_address(request):
             is_delivery_address=is_delivery_address
         )
         address.save()
+
+        if not request.user.has_address:
+            request.user.has_address = True
+            request.user.save()
+
         messages.success(request, 'Address added successfully.')
 
         # Redirect back to the previous page
@@ -94,12 +115,14 @@ def add_address(request):
         # Store the previous page URL in the session
     request.session['previous_page'] = request.META.get('HTTP_REFERER')
 
-    return render(request, 'addaddress.html')
+    # Render the 'addaddress.html' template
+
+    return render(request, 'addaddress.html', {'first_time_address': not has_existing_addresses})
 
 
 
-from django.urls import reverse
-from django.shortcuts import redirect
+
+
 
 @login_required
 def change_password_view(request):
@@ -154,10 +177,9 @@ def edit_address(request, address_id):
         phone_number = request.POST['phone']
 
         is_delivery_address = request.POST.get('is_delivery_address', False)
-        print(is_delivery_address)
+
 
         if is_delivery_address:
-            print(1)
             UserAddress.objects.filter(user=request.user, is_delivery_address=True).update(is_delivery_address=False)
 
         user_address.first_name = first_name
@@ -181,6 +203,25 @@ def edit_address(request, address_id):
     }
     return render(request, 'editaddress.html', context)
 def view_wallet(request):
-    # Assuming the user is logged in, get their wallet
-    wallet = Wallet.objects.get(user=request.user)
-    return render(request, 'viewprofile.html', {'tab': 'wallet', 'wallet': wallet})
+    wallet = get_object_or_404(Wallet, user=request.user)
+    transactions = WalletTransaction.objects.filter(wallet=wallet, deleted=False).order_by('-date')
+
+
+    # Set the number of transactions to display per page
+    transactions_per_page = 10
+
+    paginator = Paginator(transactions, transactions_per_page)
+    page_number = request.GET.get('page')
+    page_transactions = paginator.get_page(page_number)
+
+    return render(request, 'viewprofile.html', {'tab': 'wallet', 'wallet': wallet, 'transactions': page_transactions})
+def soft_delete_transaction(request, transaction_id):
+    try:
+        transaction = WalletTransaction.objects.get(pk=transaction_id, wallet__user=request.user)
+        transaction.deleted = True
+        transaction.save()
+    except WalletTransaction.DoesNotExist:
+        pass  # Handle the case where the transaction does not exist
+
+    # Redirect back to the wallet view with the current page number
+    return redirect(f'{reverse("view_wallet")}?page={request.GET.get("page")}')

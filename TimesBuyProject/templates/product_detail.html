@@ -36,13 +36,15 @@
         .imgBox.zoomed-in .zoomable-image:active {
             cursor: grabbing;
         }
+          <div class="col-xs-6"  style="width:55rem">
+
 </style>
 </head>
 <body>
 
     {% include 'navbar.html' %}
 
-<section style="padding-top: 20px;">
+<section style="padding-top: 20px;font-family: 'Josefin Sans', sans-serif;">
       {% for msg in messages %}
         <div class="container">
             <div class="row">
@@ -90,11 +92,13 @@
           </a>
         </div>
       </div>
-      <div class="col-md-6">
+      <div class="col-md-6"  style="width:55rem">
         <!-- Product Details -->
-        <div class="product-details" style="color:#0B1C39;font-family:'Josefin Sans', sans-serif;">
+        <div class="product-details" style="height:25rem">
           <h2 style="color:#0B1C39;font-family:'Josefin Sans', sans-serif;">{{ selected_variant.product.name }} - {{ selected_variant.color.color }}</h2>
-          <p>{{ selected_variant.product.description }}</p>
+          <div class="description-container" style="max-height: 4rem; overflow: auto; scrollbar-width: none;">
+                <p>{{ selected_variant.product.description }}</p>
+            </div>
           <div class="color-variants">
             <p style="color:#0B1C39;font-family:'Josefin Sans', sans-serif;">Choose Color:</p>
             <form method="post" action="{% url 'product_detail' slug=product.slug %}">
@@ -105,9 +109,16 @@
             </form>
           </div>
           <div class="price-stock">
+
             {% for variant in variants %}
               <div class="variant-details" {% if variant != selected_variant %}style="display: none;"{% endif %}>
-                <p class="price">Price: <span class="variant-price">{{ variant.price }}</span></p>
+                {% if offer_price is not None %}
+                <p class="price">
+                     <del><span class="original-price">₹{{ variant.price }}</span></del> <span class="variant-price">₹{{ offer_price }}</span><br>
+                </p>
+            {% else %}
+                <p class="price">Price: <span class="variant-price">₹{{ variant.price }}</span></p>
+            {% endif %}
                 <p class="stock">Stock Availability:
                   <span class="variant-stock">
                     {% if variant.stock > 0 and variant.stock <= 5 %}
@@ -121,15 +132,32 @@
                 </p>
                 <form method="post" action="{% url 'add_to_cart' variant_id=selected_variant.id %}">
                   {% csrf_token %}
-                  <button type="submit" name="add_to_cart" value="{{ variant.id }}">Add to Cart</button>
+                  <button class="btn" type="submit" name="add_to_cart" value="{{ variant.id }}" style="background-color:#0B1C39;color:white;">Add <i class="fas fa-shopping-cart" style="font-size: 13px; color:white;"></i></button>
                 </form>
               </div>
             {% endfor %}
+
+            {% if request.user.is_authenticated %}
+              {% if is_in_wishlist %}
+                  <!-- Product variant is already in the user's wishlist -->
+                  <form method="post" action="{% url 'remove_from_wishlist' variant_id=selected_variant.id %}">
+                      {% csrf_token %}
+                      <button class="btn" type="submit" name="remove_from_wishlist" value="{{ selected_variant.id }}" style="background-color:#0B1C39;color:white;">Remove <i class="far fa-heart" style="font-size: 13px; color:white;"></i></button>
+                  </form>
+              {% else %}
+                  <!-- Product variant is not in the user's wishlist -->
+                  <form method="post" action="{% url 'add_to_wishlist' variant_id=selected_variant.id %}">
+                      {% csrf_token %}
+                      <button class="btn" type="submit" name="add_to_wishlist" value="{{ selected_variant.id }}" style="background-color:#0B1C39;color:white;">Add <i class="far fa-heart" style="font-size: 13px; color:white;"></i></button>
+                  </form>
+              {% endif %}
+          {% endif %}
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>
 </section>
 
 <section style="padding-top: 20px; margin-bottom: 50px;color:#0B1C39;font-family:'Josefin Sans', sans-serif;">

@@ -18,6 +18,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path,include
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,6 +28,8 @@ urlpatterns = [
     path('', include('Cartapp.urls')),
     path('', include('Userprofileapp.urls')),
     path('', include('orderapp.urls')),
+    path('404/', TemplateView.as_view(template_name='404.html'), name='custom_404_page'),
+    path('<str:slug>/', TemplateView.as_view(template_name='404.html')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL,

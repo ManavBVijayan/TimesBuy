@@ -1,0 +1,58 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container-fluid" style="margin-top: 130px; font-family: 'Josefin Sans', sans-serif;margin-bottom:20px;">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            {% if error %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ error }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title fw-semibold mb-4 text-center">ADD COUPON</h5>
+                    <form action="{% url 'add_coupon' %}" method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_code" class="form-label">Coupon code<span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="id_code" name="code" placeholder="Enter coupon code in uppercase">
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_discount" class="form-label">Discount<span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" id="id_discount" name="discount">
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_valid_from" class="form-label">Valid from<span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="id_valid_from" name="valid_from">
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_valid_to" class="form-label">Valid to (optional)</label>
+                            <input type="date" class="form-control" id="id_valid_to" name="valid_to">
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_minimum_order_amount" class="form-label">Minimum order amount<span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" id="id_minimum_order_amount" name="minimum_order_amount">
+                        </div>
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="id_is_active" name="is_active">
+                            <label class="form-check-label" for="id_is_active">Activate</label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="id_single_use_per_user" name="single_use_per_user">
+                            <label class="form-check-label" for="id_single_use_per_user">Single use per user</label>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_quantity" class="form-label">Quantity<span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="id_quantity" name="quantity" value="10">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Add Coupon</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

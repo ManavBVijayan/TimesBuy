@@ -46,7 +46,7 @@
 }
 .home-title{
     background-color:#FF2020;
-    height: 8vh;
+    height: 1px;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -313,3 +313,20 @@ color:white;
   .btn-choose:hover {
     background-color: #FF2020;
   }
+
+  /* CSS to style the heart-shaped button */
+.heart-button {
+  background: none;
+  border: none;
+  color: red; /* Change the color of the heart */
+  font-size: 24px; /* Adjust the size of the heart */
+  cursor: pointer;
+  padding: 0; /* Remove padding to avoid extra space */
+}
+
+/* Remove default focus and active styles */
+.heart-button:focus,
+.heart-button:active {
+  outline: none;
+}
+

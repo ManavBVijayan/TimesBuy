@@ -3,97 +3,158 @@
 {% load static %}
 
 <style>
-    /* Custom styles for the template */
-    .address-box {
-        border: 1px solid #dee2e6;
-        border-radius: 5px;
-        padding: 15px;
-        background-color: #f8f9fa;
-    }
-    .inline-boxes {
-        display: flex;
-        justify-content: space-between;
-    }
-</style>
+  /* Custom styles for the template */
+  .address-box {
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 15px;
+    background-color: #f8f9fa;
+  }
 
-<div class="container" style="margin-top: 130px; margin-bottom: 20px;">
-    <h1 class="mt-4">Admin Order Manage</h1>
+  .inline-boxes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  /* Add responsive styles */
+  @media (max-width: 768px) {
+    .inline-boxes {
+      flex-direction: column;
+    }
+  }
+
+  /* Set background color for table columns */
+  .table td {
+    background-color: white;
+  }
+   .download-button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+    padding: 30px;
+}
+
+.download-button {
+    padding: 10px 20px;
+    background-color:#11A4A1 ;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease; /* Add transitions */
+}
+.download-button:hover {
+    color: #fff;
+    background-color:#0B8A2A ; /* New background color on hover */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Add box shadow on hover */
+}
+
+</style>
+<section style="background-color: lightgray; font-family: 'Josefin Sans', sans-serif">
+  <div class="container" style="margin-top: 120px;">
+    <h1 class="mt-4 text-center">Admin Order Manage</h1>
     <hr>
 
+    {% if view_order.order_status != 'Returned' and view_order.order_status != 'Delivered' and view_order.order_status != 'Cancelled' %}
     <div class="dropdown d-flex justify-content-end">
-        <button class="btn btn-danger dropdown-toggle" type="button" id="changeStatusDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            Change status
-        </button>
-        {% if view_order.payment_status != 'CANCELLED' and view_order.payment_status != 'RETURNED' %}
-        <ul class="dropdown-menu" aria-labelledby="changeStatusDropdown">
-            <li><a class="dropdown-item" href="{% url 'order_shipped' view_order.id %}">Shipped</a></li>
-            <li><a class="dropdown-item" href="{% url 'order_delivered' view_order.id %}">Delivered</a></li>
-            <li><a class="dropdown-item" href="{% url 'admin_order_cancel' view_order.id %}">Cancel</a></li>
-        </ul>
+      <button class="btn btn-danger dropdown-toggle" type="button" id="changeStatusDropdown" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        Change status
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="changeStatusDropdown">
+        {% if view_order.order_status == 'Ordered' %}
+        <li><a class="dropdown-item" href="{% url 'order_shipped' view_order.id %}">Shipped</a></li>
+        {% elif view_order.order_status == 'Shipped' %}
+        <li><a class="dropdown-item" href="{% url 'order_delivered' view_order.id %}">Delivered</a></li>
+        {% elif view_order.order_status == 'Requested for return' %}
+        <li><a class="dropdown-item" href="{% url 'return_order' view_order.id %}">Proceed Refund</a></li>
         {% endif %}
+        {% if view_order.order_status != 'Requested for return' and view_order.order_status != 'Delivered' and view_order.order_status != 'Cancelled' %}
+        <li><a class="dropdown-item" href="{% url 'admin_order_cancel' view_order.id %}">Cancel</a></li>
+        {% endif %}
+      </ul>
     </div>
+    {% endif %}
+
 
     <h2>Order Products</h2>
-    <table class="table table-striped table-bordered mt-3">
-        <thead class="thead-light">
-            <tr>
-                <th scope="col">Product</th>
-                <th scope="col">Image</th>
-                <th scope="col">Price</th>
-                <th scope="col">Quantity</th>
-            </tr>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered mt-3">
+        <thead style="background-color: #0B1C39; color: white;">
+          <tr>
+            <th scope="col">Product</th>
+            <th scope="col">Image</th>
+            <th scope="col">Price</th>
+            <th scope="col">Quantity</th>
+          </tr>
         </thead>
-        <tbody>
-            {% for order_item in order %}
-            <tr>
-                <td>{{ order_item.product }}</td>
-                <td>
-                    <img src="{{ order_item.product.images.first.image.url }}" alt="{{ order_item.product.name }}"
-                        class="img-thumbnail" style="height:70px;width:70px;">
-                </td>
-                <td>{{ order_item.price }}</td>
-                <td>{{ order_item.quantity }}</td>
-            </tr>
-            {% endfor %}
+        <tbody style="background-color: white;">
+          {% for order_item in order %}
+          <tr>
+            <td>{{ order_item.product }}</td>
+            <td>
+              <img src="{{ order_item.product.images.first.image.url }}" alt="{{ order_item.product.name }}"
+                class="img-thumbnail" style="height: 70px; width: 70px;">
+            </td>
+            <td>{{ order_item.price }}</td>
+            <td>{{ order_item.quantity }}</td>
+          </tr>
+          {% endfor %}
         </tbody>
-    </table>
+      </table>
+    </div>
 
     <!-- Div to display address and order details inline -->
     <div class="inline-boxes mt-4">
-        <!-- Order details box -->
-       <div class="order-details">
-            <h2>Order Details</h2>
-            <p><strong>Order ID:</strong> {{ view_order.id }}</p>
-            <p><strong>Order Date:</strong>  {{ view_order.order_date }}</p>
-            {% if view_order.payment_status != 'CANCELLED' and view_order.payment_status != 'RETURNED' %}
-                <p><strong>Delivery Date:</strong> {{ view_order.delivery_date }}</p>
-            {% endif %}
-            <p><strong>Payment Method:</strong> {{ view_order.payment_method }}</p>
-            <p><strong>Order status:</strong><span class="font-weight-bold text-danger mx-2">{{ view_order.payment_status }}</span></p>
+      <!-- Order details box -->
+      <div class="order-details mb-2">
+        <h2>Order Details</h2>
+        <p><strong>Order ID:</strong> {{ view_order.id }}</p>
+        <p><strong>Order Date:</strong> {{ view_order.order_date|date:"d F Y" }}</p>
+        <p><strong>Order status:</strong><span class="font-weight-bold text-danger mx-2">{{ view_order.order_status }}</span></p>
+        {% if view_order.order_status == 'Cancelled' %}
+        <p><strong>Cancelled Date:</strong> {{ view_order.cancelled_date|date:"d F Y" }}</p>
+        {% elif view_order.order_status == 'Shipped' %}
+        <p><strong>Shipped Date:</strong> {{ view_order.shipping_date|date:"d F Y" }}</p>
+        {% elif view_order.order_status == 'Requested for return' %}
+        <p><strong>Return Request Date:</strong> {{ view_order.return_request_date|date:"d F Y" }}</p>
+        {% elif view_order.order_status == 'Returned' %}
+        <p><strong>Return Date:</strong> {{ view_order.returned_date|date:"d F Y" }}</p>
+        {% endif %}
+        {% if view_order.delivery_date %}
+        <p><strong>Delivery Date:</strong> {{ view_order.delivery_date|date:"d F Y" }}</p>
+        {% else %}
+        <p><strong>Expected Delivery Date:</strong> {{ expected_delivery_date|date:"d F Y" }}</p>
+        {% endif %}
+        <p><strong>Payment Method:</strong> {{ view_order.payment_method }}</p>
+        <p><strong>Payment status:</strong><span class="font-weight-bold text-danger mx-2">{{ view_order.payment_status }}</span></p>
+        <p><strong>Applied Coupons:</strong> {% if view_order.applied_coupon is None %} No Coupon Applied {% else %}
+          {{ view_order.applied_coupon }} - {{ view_order.applied_coupon.discount }} {% endif %}</p>
+        <p><strong>Shipping Charge:</strong> {{ view_order.shipping_charge }}</p>
+        <p><strong>Total Price:</strong> {{ view_order.total_price }}</p>
+      </div>
 
-            <!-- Submit button for processing the order -->
-            {% if view_order.payment_status == 'PENDING' %}
-                <form action="{% url 'process_order' view_order.id %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-primary">Process Order</button>
-                </form>
-            {% endif %}
-        </div>
-
-        <!-- Address box -->
-        <div class="address-box ml-4">
-            <h2>Order Address</h2>
-            <p><strong>Name:</strong> {{ view_order.address.first_name }}</p>
-            <p><strong>Address:</strong> {{ view_order.address.address_line_1 }}</p>
-            {% if view_order.address.address_line_2 %}
-            <p><strong>Address Line 2:</strong> {{ view_order.address.address_line_2 }}</p>
-            {% endif %}
-            <p><strong>City:</strong> {{ view_order.address.city }}</p>
-            <p><strong>Zip Code:</strong> {{ view_order.address.postal_code }}</p>
-            <p><strong>State:</strong> {{ view_order.address.state }}</p>
-            <p><strong>Phone Number:</strong> {{ view_order.address.phone_number }}</p>
+      <!-- Address box -->
+      <div class="address-box ml-2 mb-4">
+          <h2>Order Address</h2>
+          <p><strong>Name:</strong> {{ view_order.first_name }} {{ view_order.address.last_name }}</p>
+          <p><strong>Email:</strong> {{ view_order.email }}</p>
+          <p><strong>Phone:</strong> {{ view_order.phone_number }}</p>
+          <p><strong>Address Line 1:</strong> {{ view_order.address_line_1 }}</p>
+          {% if view_order.address_line_2 %}
+          <p><strong>Address Line 2:</strong> {{ view_order.address_line_2 }}</p>
+          {% endif %}
+          <p><strong>City:</strong> {{ view_order.city }}</p>
+          <p><strong>Zip Code:</strong> {{ view_order.postal_code }}</p>
+          <p><strong>State:</strong> {{ view_order.state }}</p>
+          <p><strong>Country:</strong> {{ view_order.country }}</p>
         </div>
     </div>
-
-</div>
+    <div class="download-button-container">
+                <a href="{% url 'download_invoice' view_order.id %}" class="download-button" style="text-decoration:None;">Download Invoice</a>
+    </div>
+  </div>
+</section>
 {% endblock %}

@@ -5,6 +5,7 @@ from django.db import models
 
 class CustomUser(AbstractUser):
     phone_number = models.CharField(max_length=20)
+    has_address = models.BooleanField(default=False)
 
 
 class OTPGeneration(models.Model):

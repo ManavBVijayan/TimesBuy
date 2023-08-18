@@ -1,63 +1,92 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.core.paginator import Paginator
 from django.db.models import Count, Q, Sum
 from django.db.models.functions import TruncDate
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from Authenticate.models import CustomUser
-from Store.models import Category,Brand,GenderType,Product,ProductVariant,ProductImage,Color
+from Store.models import Category,Brand,GenderType,Product,ProductVariant,ProductImage,Color,Banner
+from django.template.loader import render_to_string
 from orderapp.models import Order,OrderItem
 from datetime import timedelta
 from django.utils import timezone
+from django.db import IntegrityError
+from Userprofileapp.models import UserAddress,Wallet,WalletTransaction
+from decimal import Decimal
+from xhtml2pdf import pisa
 
 def admin_home(request):
     if request.method == 'GET':
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
         if not start_date and not end_date:
-            # Calculate the current date
             current_date = timezone.now().date()
-
-            # Calculate the date 30 days back from the current date
             default_start_date = current_date - timedelta(days=30)
             default_end_date = current_date
-
-            # Convert to string format (YYYY-MM-DD)
             start_date = default_start_date.strftime('%Y-%m-%d')
             end_date = default_end_date.strftime('%Y-%m-%d')
 
         if start_date and end_date:
-            # Corrected query filter for start_date and end_date using 'date' lookup
             order_count_date = Order.objects.filter(
                 Q(order_date__date__gte=start_date, order_date__date__lte=end_date) |
                 Q(order_date__date=end_date, order_date__isnull=True)
-            ).exclude(payment_status='CANCELLED').count()
+            ).exclude(
+                Q(payment_status='Refunded') |
+                Q(payment_status='Pending') |
+                Q(payment_status='No payment')
+            ).count()
 
             total_price_date = Order.objects.filter(
                 Q(order_date__date__gte=start_date, order_date__date__lte=end_date) |
                 Q(order_date__date=end_date, order_date__isnull=True)
-            ).exclude(payment_status='CANCELLED').aggregate(total=Sum('total_price'))['total']
+            ).exclude(
+                Q(payment_status='Refunded') |
+                Q(payment_status='Pending') |
+                Q(payment_status='No payment')
+            ).aggregate(total=Sum('total_price'))['total']
 
             daily_totals = Order.objects.filter(
                 Q(order_date__date__gte=start_date, order_date__date__lte=end_date) |
                 Q(order_date__date=end_date, order_date__isnull=True)
-            ).exclude(payment_status='CANCELLED').annotate(date=TruncDate('order_date')).values('date').annotate(
+            ).exclude(
+                Q(payment_status='Refunded') |
+                Q(payment_status='Pending') |
+                Q(payment_status='No payment')
+            ).annotate(date=TruncDate('order_date')).values('date').annotate(
                 total=Sum('total_price')).order_by('date')
 
-            order_count = Order.objects.exclude(payment_status='CANCELLED').count()
-            total_price = Order.objects.exclude(payment_status='CANCELLED').aggregate(total=Sum('total_price'))['total']
+            order_count = Order.objects.exclude(
+                Q(payment_status='Refunded') |
+                Q(payment_status='No payment')
+            ).count()
+
+            total_price = Order.objects.exclude(
+                Q(payment_status='Refunded') |
+                Q(payment_status='No payment')
+            ).aggregate(total=Sum('total_price'))['total']
+
             today = timezone.now().date()
             today_orders = Order.objects.filter(order_date__date=today)
             order_count_today = today_orders.count()
             total_price_today = sum(order.total_price for order in today_orders)
+
             recent_orders = Order.objects.order_by('-order_date')[:3]
 
-            # Corrected query for top_selling_products using 'product_id' and 'product__name'
             top_selling_products = OrderItem.objects.values('product__product__name').annotate(
                 total_quantity=Sum('quantity')
             ).order_by('-total_quantity')[:5]
 
-            categories = Category.objects.all()
+            cancelled_products = OrderItem.objects.filter(
+                order__payment_status__in=['Cancelled', 'Refunded']
+            ).aggregate(total_cancelled=Sum('quantity'))['total_cancelled']
+
+            returned_products = OrderItem.objects.filter(
+                order__payment_status='RETURNED'
+            ).aggregate(total_returned=Sum('quantity'))['total_returned']
+
+            categories = Category.objects.all()  # Make sure to replace Category with your actual category model
+
             data = []
 
             for category in categories:
@@ -72,26 +101,35 @@ def admin_home(request):
                 'daily_totals': daily_totals,
                 'order_count': order_count,
                 'total_price': total_price,
-                'categories': categories,
-                'data': data,
                 'order_count_today': order_count_today,
                 'total_price_today': total_price_today,
                 'recent_orders': recent_orders,
                 'top_selling_products': top_selling_products,
+                'cancelled_products': cancelled_products,
+                'returned_products': returned_products,
+                'categories': categories,
+                'data': data,
             }
-
             return render(request, 'adminhome.html', context)
-
         else:
-            order_count = Order.objects.exclude(payment_status='CANCELLED').count()
-            total_price = Order.objects.exclude(payment_status='CANCELLED').aggregate(total=Sum('total_price'))['total']
-
+            order_count = Order.objects.exclude(
+                Q(payment_status='Refunded') |
+                Q(payment_status='No payment')).count()
+            total_price = Order.objects.exclude(
+                Q(payment_status='Refunded') |
+                Q(payment_status='No payment')
+            ).aggregate(total=Sum('total_price'))['total']
             today = timezone.now().date()
             today_orders = Order.objects.filter(order_date__date=today)
             order_count_today = today_orders.count()
             total_price_today = sum(order.total_price for order in today_orders)
-
-            categories = Category.objects.all()
+            cancelled_products = OrderItem.objects.filter(
+                order__payment_status__in=['Cancelled', 'Refunded']
+            ).aggregate(total_cancelled=Sum('quantity'))['total_cancelled']
+            returned_products = OrderItem.objects.filter(
+                order__payment_status='RETURNED'
+            ).aggregate(total_returned=Sum('quantity'))['total_returned']
+            categories = Category.objects.all()  # Make sure to replace Category with your actual category model
             data = []
 
             for category in categories:
@@ -99,8 +137,6 @@ def admin_home(request):
                 data.append(product_count)
 
             recent_orders = Order.objects.order_by('-order_date')[:3]
-
-            # Corrected query for top_selling_products using 'product_id' and 'product__name'
             top_selling_products = OrderItem.objects.values('product__product__name').annotate(
                 total_quantity=Sum('quantity')
             ).order_by('-total_quantity')[:5]
@@ -116,10 +152,10 @@ def admin_home(request):
                 'data': data,
                 'recent_orders': recent_orders,
                 'top_selling_products': top_selling_products,
+                'cancelled_products': cancelled_products,
+                'returned_products': returned_products,
             }
-
             return render(request, 'adminhome.html', context)
-
     return HttpResponseBadRequest("Invalid request method.")
 
 def admin_login(request):
@@ -259,9 +295,6 @@ def edit_product(request, product_id):
         brand_id = request.POST.get('brand')
         gender_id = request.POST.get('gender')
 
-        # Print the brand ID to debug
-        print("Selected brand ID:", brand_id)
-
         product.category = get_object_or_404(Category, id=category_id)
         product.brandName = get_object_or_404(Brand, id=brand_id)
         product.gender = get_object_or_404(GenderType, id=gender_id)
@@ -310,7 +343,7 @@ def add_product(request):
             touch_screen=touch_screen,
             price=price,
             stock=stock,
-            color_id=color_id  # Assign the selected color to the variant
+            color_id=color_id
         )
 
         # Create and associate the images with the variant
@@ -388,8 +421,11 @@ def add_variant(request, product_id):
 
         # Handle multiple images upload
         images = request.FILES.getlist('images')
-        for image in images:
-            ProductImage.objects.create(variant=variant, image=image)
+        try:
+            for image in images:
+                ProductImage.objects.create(variant=variant, image=image)
+        except IntegrityError as e:
+            print(f"Error saving images: {e}")
 
         return redirect('product-view', product_id=product_id)
 
@@ -452,7 +488,15 @@ def edit_variant(request, product_id, variant_id):
 def admin_orders(request):
     if request.user.is_authenticated and request.user.is_superuser:
         orders = Order.objects.order_by('-id')
-        return render(request, 'allorder.html', {'orders': orders})
+
+        # Configure the number of orders per page
+        paginator = Paginator(orders, 10)  # 10 orders per page
+
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        context = {'page_obj': page_obj}
+        return render(request, 'allorder.html', context)
     else:
         return render(request, 'home.html')
 
@@ -463,10 +507,12 @@ def admin_order_view(request, order_id):
     if request.user.is_superuser:
         view_order = get_object_or_404(Order, id=order_id)
         order = OrderItem.objects.filter(order=view_order)
+        expected_delivery_date = view_order.order_date + timedelta(days=3)
 
         context = {
             'order': order,
             'view_order': view_order,
+            'expected_delivery_date':expected_delivery_date
         }
         return render(request, 'adminorderview.html', context)
     else:
@@ -475,9 +521,10 @@ def admin_order_view(request, order_id):
 def order_shipped(request, order_id):
     if request.user.is_superuser:
         order = get_object_or_404(Order, id=order_id)
-        order.payment_status = 'SHIPPED'
+        order.order_status = 'Shipped'
+        order.shipping_date=timezone.now()
         order.save()
-        return redirect('admin_orders')
+        return redirect(request.META.get('HTTP_REFERER'))
     else:
         return render(request, 'home.html')
 
@@ -486,25 +533,271 @@ def order_delivered(request, order_id):
         order = get_object_or_404(Order, id=order_id)
 
         # Make sure the order is in the 'SHIPPED' status before marking it as 'DELIVERED'
-        if order.payment_status == 'SHIPPED':
-            order.payment_status = 'DELIVERED'
+        if order.order_status == 'Shipped':
+            order.order_status = 'Delivered'
+            order.delivery_date=timezone.now()
+            order.return_period_expired=timezone.now()+timezone.timedelta(days=5)
+            if order.payment_status=='Pending':
+                order.payment_status='Paid'
             order.save()
 
-    return redirect('admin_orders')
+    return redirect(request.META.get('HTTP_REFERER'))
 
 def admin_order_cancel(request, order_id):
     if request.user.is_superuser:
         order = get_object_or_404(Order, id=order_id)
-        if order.payment_status != 'DELIVERED' and order.payment_status != 'RETURNED':
+        user = order.user
+        if order.order_status != 'Delivered' and order.order_status != 'Returned'and order.order_status !='Cancelled' and order.order_status != 'Requested for return ':
             order_items = OrderItem.objects.filter(order=order)
             for item in order_items:
                 variant = item.product
                 variant.stock += item.quantity
                 variant.save()
-            order.payment_status = 'CANCELLED'
+            if order.payment_method in ['Net banking', 'Wallet pay']:
+                user_wallet = Wallet.objects.get(user=user)
+                # Refund the amount to the user's wallet
+                refund_amount = order.total_price  # Assuming you want to refund the full amount
+                user_wallet.balance += Decimal(refund_amount)
+                user_wallet.save()
+                transaction_type = 'Cancelled'
+                WalletTransaction.objects.create(
+                    wallet=user_wallet,
+                    amount=refund_amount,
+                    order_id=order,
+                    transaction_type=transaction_type,
+                )
+            if order.payment_status=='Pending':
+                order.payment_status='No payment'
+            else:
+                order.payment_status='Refunded'
+            order.order_status='Cancelled'
+            Order.cancelled_date=timezone.now()
             order.save()
 
-        return redirect('admin_orders')
+        return redirect(request.META.get('HTTP_REFERER'))
 
     else:
         return render(request, 'home.html')
+
+def return_orders(request, order_id):
+    if request.user.is_superuser:
+        order = get_object_or_404(Order, id=order_id)
+        user = order.user
+        user_wallet, created = Wallet.objects.get_or_create(user=user)
+        refund_amount = order.total_price  # Assuming you want to refund the full amount
+        user_wallet.balance += Decimal(refund_amount)
+        user_wallet.save()
+        transaction_type = 'Return'
+        WalletTransaction.objects.create(
+            wallet=user_wallet,
+            amount=refund_amount,
+            order_id=order,
+            transaction_type=transaction_type,
+        )
+        if order.order_status != 'Cancelled':
+            order.payment_status = 'Refunded'
+            order.order_status = 'Returned'
+            order.returned_date=timezone.now()
+            order.save()
+
+        return redirect(request.META.get('HTTP_REFERER'))
+
+
+def sales_view(request):
+    today = timezone.now().date()
+    week_ago = today - timedelta(days=7)
+    month_ago = today - timedelta(days=30)
+
+    today_orders = Order.objects.filter(order_date__date=today, payment_status='Paid').exclude(order_status__in=['Returned', 'Cancelled'])
+    order_count_today = today_orders.count()
+    total_price_today = today_orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
+
+    week_orders = Order.objects.filter(order_date__range=[week_ago, today], payment_status='Paid').exclude(order_status__in=['Returned', 'Cancelled'])
+    order_count_week = week_orders.count()
+    total_price_week = week_orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
+
+    month_orders = Order.objects.filter(order_date__range=[month_ago, today], payment_status='Paid').exclude(order_status__in=['Returned', 'Cancelled'])
+    order_count_month = month_orders.count()
+    total_price_month = month_orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
+
+    top_selling_variants_today = OrderItem.objects.filter(order__in=today_orders).values(
+        'product__model_name', 'product__color__color').annotate(total_quantity=Sum('quantity')).order_by(
+        '-total_quantity')[:5]
+    top_selling_variants_week = OrderItem.objects.filter(order__in=week_orders).values(
+        'product__model_name', 'product__color__color').annotate(total_quantity=Sum('quantity')).order_by(
+        '-total_quantity')[:5]
+    top_selling_variants_month = OrderItem.objects.filter(order__in=month_orders).values(
+        'product__model_name', 'product__color__color').annotate(total_quantity=Sum('quantity')).order_by(
+        '-total_quantity')[:5]
+
+    context = {
+        'order_count_today': order_count_today,
+        'total_price_today': total_price_today,
+        'order_count_week': order_count_week,
+        'total_price_week': total_price_week,
+        'order_count_month': order_count_month,
+        'total_price_month': total_price_month,
+        'top_selling_variants_today': top_selling_variants_today,
+        'top_selling_variants_week': top_selling_variants_week,
+        'top_selling_variants_month': top_selling_variants_month,
+    }
+
+    return render(request, 'sales_view.html', context)
+
+def generate_pdf(request):
+    today = timezone.now().date()
+    week_ago = today - timedelta(days=7)
+    month_ago = today - timedelta(days=30)
+
+    today_orders = Order.objects.filter(order_date__date=today, payment_status='Paid').exclude(
+        order_status__in=['Returned', 'Cancelled'])
+    order_count_today = today_orders.count()
+    total_price_today = today_orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
+
+    week_orders = Order.objects.filter(order_date__range=[week_ago, today], payment_status='Paid').exclude(
+        order_status__in=['Returned', 'Cancelled'])
+    order_count_week = week_orders.count()
+    total_price_week = week_orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
+
+    month_orders = Order.objects.filter(order_date__range=[month_ago, today], payment_status='Paid').exclude(
+        order_status__in=['Returned', 'Cancelled'])
+    order_count_month = month_orders.count()
+    total_price_month = month_orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
+
+    top_selling_variants_today = OrderItem.objects.filter(order__in=today_orders).values(
+        'product__model_name', 'product__color__color').annotate(total_quantity=Sum('quantity')).order_by(
+        '-total_quantity')[:5]
+    top_selling_variants_week = OrderItem.objects.filter(order__in=week_orders).values(
+        'product__model_name', 'product__color__color').annotate(total_quantity=Sum('quantity')).order_by(
+        '-total_quantity')[:5]
+    top_selling_variants_month = OrderItem.objects.filter(order__in=month_orders).values(
+        'product__model_name', 'product__color__color').annotate(total_quantity=Sum('quantity')).order_by(
+        '-total_quantity')[:5]
+
+    context = {
+        'order_count_today': order_count_today,
+        'total_price_today': total_price_today,
+        'order_count_week': order_count_week,
+        'total_price_week': total_price_week,
+        'order_count_month': order_count_month,
+        'total_price_month': total_price_month,
+        'top_selling_variants_today': top_selling_variants_today,
+        'top_selling_variants_week': top_selling_variants_week,
+        'top_selling_variants_month': top_selling_variants_month,
+    }
+
+    template = 'sales_report_pdf.html'
+    html_string = render_to_string(template, context)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'filename="sales_report.pdf"'
+
+    pisa_status = pisa.CreatePDF(html_string, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse('We had some errors <pre>' + html_string + '</pre>')
+    return response
+def list_all_brands(request):
+    order_by = request.GET.get('order_by', 'name')
+    all_brands = Brand.objects.all().order_by(order_by)
+    context = {
+        'brands': all_brands,
+    }
+    return render(request, 'brand_list.html', context)
+def enable_brand(request, brand_id):
+    brand = get_object_or_404(Brand, id=brand_id)
+    brand.is_active = True
+    brand.save()
+    return redirect('list-all-brands')  # Redirect to the list of all brands
+
+# View to disable a brand
+def disable_brand(request, brand_id):
+    brand = get_object_or_404(Brand, id=brand_id)
+    brand.is_active = False
+    brand.save()
+    return redirect('list-all-brands')
+
+
+def add_brand(request):
+    if request.method == 'POST':
+        name = request.POST['name']
+        image = request.FILES['image']
+        is_active = bool(request.POST.get('is_active', False))
+        offer_title = request.POST.get('offer_title')
+        offer_percentage_str = request.POST.get('offer_percentage', '')
+        if offer_percentage_str.isdigit():
+            offer_percentage = int(offer_percentage_str)
+        else:
+            offer_percentage = 0
+
+        offer_is_active = bool(request.POST.get('offer_is_active', False))
+
+        brand = Brand.objects.create(
+            name=name,
+            image=image,
+            is_active=is_active,
+            offer_title=offer_title,
+            offer_percentage=offer_percentage,
+            offer_is_active=offer_is_active,
+        )
+
+        return redirect('list-all-brands')  # Redirect to the list of all brands
+
+    return render(request, 'add_brand.html')
+def edit_brand(request, brand_id):
+    brand = get_object_or_404(Brand, id=brand_id)
+
+    if request.method == 'POST':
+        brand.name = request.POST['name']
+        brand.image = request.FILES.get('image', brand.image)
+        brand.is_active = bool(request.POST.get('is_active', False))
+        brand.offer_title = request.POST.get('offer_title')
+        brand.offer_percentage = int(request.POST.get('offer_percentage', 0))
+        brand.offer_is_active = bool(request.POST.get('offer_is_active', False))
+        brand.save()
+
+        return redirect('list-all-brands')  # Redirect to the list of all brands
+
+    context = {
+        'brand': brand,
+    }
+    return render(request, 'edit_brand.html', context)
+
+
+def add_banner(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        image = request.FILES.get('image')
+        brand_id = request.POST.get('brand')
+
+        banner = Banner(name=name, image=image, brand_id=brand_id)
+        banner.save()
+
+        return redirect('list-banners')
+
+    active_brands = Brand.objects.filter(is_active=True)
+    return render(request, 'add_banner.html', {'active_brands': active_brands})
+
+def list_banners(request):
+    banners = Banner.objects.all()
+    return render(request, 'list_banner.html', {'banners': banners})
+
+
+def edit_banner(request, banner_id):
+    banner = get_object_or_404(Banner, pk=banner_id)
+
+    if request.method == 'POST':
+        banner.name = request.POST.get('name')
+        image = request.FILES.get('image')
+        if image:
+            banner.image = image
+        banner.brand_id = request.POST.get('brand')
+        banner.save()
+        return redirect('list-banners')
+
+    active_brands = Brand.objects.filter(is_active=True)
+    return render(request, 'edit_banner.html', {'banner': banner, 'active_brands': active_brands})
+def delete_banner(request, banner_id):
+    banner = get_object_or_404(Banner, pk=banner_id)
+    banner.delete()
+    return redirect('list-banners')

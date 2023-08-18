@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+<style>
+    body {
+        font-size: 16px;
+    }
+
+    .btn {
+        padding: 5px 10px;
+        font-size: 14px;
+    }
+
+  /* Media query for smaller screens */
+    @media (max-width: 768px) {
+        body {
+            font-size: 12px;
+        }
+
+        .btn {
+            padding: 3px 8px;
+            font-size: 12px;
+            width:70px;
+        }
+
+
+
+        .btn-wrapper {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .pagination {
+            justify-content: center;
+        }
+    }
+    }
+</style>
+<section class="shop-cart" style="font-family: 'Josefin Sans', sans-serif; margin-bottom: 10px;">
+    <div class="container-fluid" style="background-color: #0B1C39; margin-bottom: 10px; font-family: 'Josefin Sans', sans-serif;">
+        <div class="row justify-content-center align-items-center" style="height: 120px; background-color: #0B1C39; margin-bottom: 10px; font-family: 'Josefin Sans', sans-serif;  text-align: center; color: white; font-weight: bold;">
+            <div class="col">
+                <span style="text-transform: uppercase;" class="cart-span">wish</span><span  style="text-transform: uppercase; color: #FF2020;" class="cart-span">list</span>
+            </div>
+        </div>
+    </div>
+    {% for msg in messages %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    {% if msg.tags == 'error' %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {% elif msg.tags == 'success' %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {% else %}
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    {% endif %}
+                        {{ msg }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+   <div class="bg0 p-t-75 p-b-85">
+        <div class="container">
+            <div class="row justify-content-center" style="min-height: 80vh;">
+                <div class="col-lg-12 col-xl-10">
+                    <div class="m-l-25 m-r--38 m-lr-0-xl">
+                        {% if wishlist_items %}
+                        <div class="table-responsive" style="max-height:700px;">
+                            <table class="table cart-table table-striped table-bordered" style="margin-top:10px;">
+                                <thead style="color:white; background-color:#0B1C39">
+                                    <tr>
+                                        <th>Image</th>
+                                        <th>Name</th>
+                                        <th>Price</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for wishlist_item in wishlist_items %}
+                                    <tr>
+                                        <td>
+                                            <div class="how-itemcart1">
+                                                <img src="{{ wishlist_item.product.images.first.image.url }}" alt="Product Image" style="height: 60px; width: 60px;width:75px;">
+                                            </div>
+                                        </td>
+                                        <td>{{ wishlist_item.product.product.name }}-{{ wishlist_item.product.color }}</td>
+                                        <td>₹ {{ wishlist_item.product.price }}</td>
+                                        <td>
+                                            <div class="d-flex">
+                                                <!-- Remove from Wishlist Form -->
+                                                <form method="POST" action="{% url 'remove_wishlist' wishlist_item.id %}?page={{ wishlist_items.number }}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-danger ml-2" style="margin-bottom: 10px;">Remove</button>
+                                                </form>
+                                                <!-- Add to Cart Form -->
+                                                <form method="POST" action="{% if wishlist_item.product.id in cart_product_ids %}{% url 'view_cart' %}{% else %}{% url 'add_to_cart' wishlist_item.product.id %}{% endif %}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm {% if wishlist_item.product.stock == 0 %}btn-light  disabled {% elif wishlist_item.product.id in cart_product_ids %} btn-info {% else %}btn-info{% endif %}" style="margin-bottom: 10px; width:75px;">
+                                                        {% if wishlist_item.product.stock == 0 %}
+                                                        Stock out
+                                                        {% elif wishlist_item.product.id in cart_product_ids %}
+                                                            View <i class="fas fa-shopping-cart" style="font-size: 10px;"></i>
+                                                        {% else %}
+                                                            Add <i class="fas fa-shopping-cart" style="font-size: 10px;"></i>
+                                                        {% endif %}
+                                                    </button>
+                                                </form>
+
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <nav class="d-flex justify-content-center mt-4">
+                            <ul class="pagination">
+                                {% if wishlist_items.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1">First</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ wishlist_items.previous_page_number }}">Previous</a>
+                                    </li>
+                                {% endif %}
+                                {% for i in wishlist_items.paginator.page_range %}
+                                    <li class="page-item {% if wishlist_items.number == i %}active{% endif %}">
+                                        <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                                    </li>
+                                {% endfor %}
+                                {% if wishlist_items.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ wishlist_items.next_page_number }}">Next</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ wishlist_items.paginator.num_pages }}">Last</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% else %}
+                        <div class="container justify-content-center py-4 mt-4">
+                            <div class="row d-flex justify-content-center align-items-center">
+                                <div class="col-xl-6">
+                                    <div class="card text-black align-items-center" style="border: 1px solid #0B1C39; background:#F1E8E8;">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="card-body p-md-4 ">
+                                                    <div class="message-container">
+                                                        <div class="verification-box text-center"> <!-- Added 'text-center' class for centering content -->
+                                                            <h1>Oops..! Your Wishlist Is Empty!</h1>
+                                                            <img class="verification-image img-fluid" src="{% static 'images/empty-wishlist.png' %}" alt="Verification Image" style="max-height: 40vh; width: auto;"> <!-- Added 'img-fluid' class for responsive image -->
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-center">
+                                                        <a href="{% url 'shop' %}" class="btn mt-3" style="background-color: #0B1C39;color:white;padding-bottom:10px;">Shop More</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

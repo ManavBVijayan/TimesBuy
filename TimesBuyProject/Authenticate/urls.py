@@ -12,4 +12,5 @@ urlpatterns = [
     path('reset-password/',views.reset_password,name='reset-password'),
     path('verify-email-fp/<str:uidb64>/<str:token>/', views.forgot_pw_verify_mail, name='verify-email-fp'),
     path('password-reset-success/',views.password_reset_success,name='password-reset-success'),
+    path('send-predefined-sms/', views.send_predefined_twilio_message, name='send_predefined_sms'),
 ]

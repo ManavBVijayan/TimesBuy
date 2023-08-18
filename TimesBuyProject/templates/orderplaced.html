@@ -11,13 +11,13 @@
                         <div class="col-lg-12">
                             <div class="card-body p-md-4 ">
                                 <div class="message-container">
-                                    <div class="verification-box ">
+                                    <div class="verification-box text-center">
                                         <h1>Your Order Is Successfully Placed</h1>
-                                        <img class="verification-image" src="{% static 'images/order-placed.jpg' %}" alt="Verification Image" style="height:40vh">
+                                        <img class="verification-image img-fluid" src="{% static 'images/order-placed.jpg' %}" alt="Verification Image">
                                     </div>
                                 </div>
-                                <div class="text-center">  <!-- Add a new div with text-center class for centering the button -->
-                                    <a href="{% url 'shop' %}" class="btn mt-3" style="background-color: #0B1C39;color:white;padding-bottom:10px;">Shop More</a>  <!-- Add btn-primary class for a Bootstrap-styled button -->
+                                <div class="text-center mt-3">
+                                    <a href="{% url 'shop' %}" class="btn mt-3" style="background-color: #0B1C39;color:white;padding-bottom:10px;">Shop</a>
                                 </div>
                             </div>
                         </div>

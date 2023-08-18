@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Invoice</title>
+    <style>
+        /* Custom CSS for PDF styling */
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Invoice</h1>
+
+    <div class="address-box ml-4">
+        <h2>Order Address</h2>
+        <p><strong>Name:</strong> {{ order.first_name }} {{ order.address.last_name }}</p>
+        <p><strong>Email:</strong> {{ order.email }}</p>
+        <p><strong>Phone:</strong> {{ order.phone_number }}</p>
+        <p><strong>Address Line 1:</strong> {{ order.address_line_1 }}</p>
+        {% if order.address_line_2 %}
+            <p><strong>Address Line 2:</strong> {{ order.address_line_2 }}</p>
+        {% endif %}
+        <p><strong>City:</strong> {{ order.city }}</p>
+        <p><strong>Pin Code:</strong> {{ order.postal_code }}</p>
+        <p><strong>State:</strong> {{ order.state }}</p>
+        <p><strong>Country:</strong> {{ order.country }}</p>
+    </div>
+
+    <div class="order-details">
+        <h2>Order Details</h2>
+        <table>
+            <tr>
+                <th>Order ID:</th>
+                <td>{{ order.id }}</td>
+            </tr>
+            <tr>
+                <th>Order Date:</th>
+                <td>{{ order.order_date|date:"d F Y" }}</td>
+            </tr>
+            <tr>
+                <th>Order Status:</th>
+                <td>{{ order.order_status }}</td>
+            </tr>
+            <!-- Add more order details here as needed -->
+        </table>
+
+        <!-- Additional Payment Details -->
+        <h2>Payment Details</h2>
+        <table>
+            <tr>
+                <th>Payment Method:</th>
+                <td>{{ order.payment_method }}</td>
+            </tr>
+            <tr>
+                <th>Payment Status:</th>
+                <td>{{ order.payment_status }}</td>
+            </tr>
+            <tr>
+                <th>Applied Coupons:</th>
+                <td>{% if order.applied_coupon is None %} No Coupon Applied {% else %} {{ order.applied_coupon}} - {{ order.applied_coupon.discount }} {% endif %}</td>
+            </tr>
+            <tr>
+                <th>Shipping Charge:</th>
+                <td>{{ order.shipping_charge }}</td>
+            </tr>
+            <tr>
+                <th>Total Price:</th>
+                <td>{{ order.total_price }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Order Items Table -->
+    <h2>Order Items</h2>
+    <table>
+        <tr>
+            <th>Product</th>
+            <th>Brand</th>
+            <th>Price</th>
+            <th>Quantity</th>
+        </tr>
+        {% for item in order_items %}
+        <tr>
+            <td>{{ item.product }}</td>
+            <td>{{ item.product.product.brandName.name }}</td>
+            <td>{{ item.price }}</td>
+            <td>{{ item.quantity }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</body>
+</html>

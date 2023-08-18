@@ -1,0 +1,46 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container-fluid" style="margin-top: 130px; font-family: 'Josefin Sans', sans-serif;">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            {% if error_message %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ error_message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title fw-semibold mb-4 text-center">EDIT COUPON</h5>
+                    <form action="{% url 'edit_coupon' coupon.id %}" method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_code" class="form-label">Coupon code</label>
+                            <input type="text" class="form-control" id="id_code" name="code" value="{{ coupon.code }}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_discount" class="form-label">Discount<span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" id="id_discount" name="discount" value="{{ coupon.discount }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_valid_to" class="form-label">Valid to (optional)</label>
+                            <input type="date" class="form-control" id="id_valid_to" name="valid_to" value="{{ coupon.valid_to|date:'Y-m-d' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_minimum_order_amount" class="form-label">Minimum order amount<span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" id="id_minimum_order_amount" name="minimum_order_amount" value="{{ coupon.minimum_order_amount }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_quantity" class="form-label">Quantity<span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="id_quantity" name="quantity" value="{{ coupon.quantity }}">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

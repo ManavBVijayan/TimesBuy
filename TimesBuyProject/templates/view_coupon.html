@@ -1,0 +1,156 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+
+{% block body %}
+<style>
+    .fixed-card-container {
+
+        min-height: 500px; /* Set the minimum height for the container */
+    }
+    table.table tbody tr {
+        background-color: #EDF1FF;
+    }
+
+    /* Add borders between each row */
+    table.table tbody tr {
+        border-bottom: 1px solid #ccc;
+    }
+
+    .empty-card {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 400px; /* Set the fixed height for the empty card */
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    /* Increase the height of each column in the table */
+    table.table tr td {
+        padding: 20px 10px; /* Adjust the padding to increase height */
+    }
+
+    /* Allow horizontal scrolling on small screens */
+    @media (max-width: 576px) {
+        .table-container {
+            overflow-x: auto;
+        }
+        /* Reduce font size in mobile view */
+        table.table {
+            font-size: 12px;
+        }
+        .btn {
+            font-size: 12px;
+        }
+    }
+    .pagination .page-link {
+        color: #fff;
+        background-color: #0B1C39;
+        border-color:#fff;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #FF2020;
+        border-color:#FF2020;
+    }
+
+    .pagination .page-link:hover {
+        background-color: #FF2020;
+        border-color: #FF2020;
+    }
+</style>
+
+<div class="container-fluid" style="margin-top: 130px; font-family: 'Josefin Sans', sans-serif; margin-bottom: 20px;">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            {% if coupons %}
+            <div class="card fixed-card-container">
+                <div class="card-body fixed-card">
+                    <h5 class="card-title fw-semibold mb-4 text-center">VIEW COUPONS</h5>
+                    <div class="table-container table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">Coupon Code</th>
+                                    <th class="text-center">Discount</th>
+                                    <th class="text-center">Valid From</th>
+                                    <th class="text-center">Valid To</th>
+                                    <th class="text-center">Minimum Order Amount</th>
+                                    <th class="text-center">Active</th>
+                                    <th class="text-center">Single Use</th>
+                                    <th class="text-center">Quantity</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for coupon in coupons %}
+                                <tr>
+                                    <td class="text-center">{{ coupon.code }}</td>
+                                    <td class="text-center">{{ coupon.discount }}</td>
+                                    <td class="text-center">{{ coupon.valid_from|date:"Y-m-d" }}</td>
+                                    <td class="text-center">
+                                        {% if coupon.valid_to %}
+                                            {{ coupon.valid_to|date:"Y-m-d" }}
+                                        {% else %}
+                                            No Expiry
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">{{ coupon.minimum_order_amount }}</td>
+                                    <td class="text-center">{{ coupon.is_active }}</td>
+                                    <td class="text-center">{{ coupon.single_use_per_user }}</td>
+                                    <td class="text-center">{{ coupon.quantity }}</td>
+                                    <td class="text-center  flex-column">
+                                        {% if coupon.is_active %}
+                                            <a href="{% url 'edit_coupon' coupon.id %}" class="btn btn-sm " style="font-family:'Josefin Sans', sans-serif; background-color:#FF2020;width:70px;">Edit</a>
+                                            <a href="{% url 'disable_coupon' coupon.id %}" class="btn  btn-sm " style="color:white;font-family:'Josefin Sans', sans-serif;background-color:#FF2020;width:70px;">Disable</a>
+                                        {% else %}
+                                            <a href="{% url 'enable_coupon' coupon.id %}" class="btn  btn-sm " style="color:white;font-family:'Josefin Sans', sans-serif;background-color:#0B1C39;width:70px;">Enable</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card empty-card">
+                <div class="card-body">
+                    No coupons found.
+                </div>
+            </div>
+            {% endif %}
+
+            {% if coupons.has_other_pages %}
+            <nav class="d-flex justify-content-center mt-4">
+                <ul class="pagination">
+                    {% if coupons.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ coupons.previous_page_number }}">Previous</a>
+                    </li>
+                    {% endif %}
+                    {% for i in coupons.paginator.page_range %}
+                    <li class="page-item {% if coupons.number == i %}active{% endif %}">
+                        <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                    </li>
+                    {% endfor %}
+                    {% if coupons.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ coupons.next_page_number }}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ coupons.paginator.num_pages }}">Last</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
