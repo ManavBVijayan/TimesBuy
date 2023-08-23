@@ -269,8 +269,8 @@
                                 <th>Date</th>
                                 <th>Amount</th>
                                 <th>Credited/Debited</th>
-                                <th>Order ID</th>
-                                <th>Action</th>
+                                <th>Order ID - Actions</th>
+<!--                                <th>Action</th>-->
                             </tr>
                         </thead>
                         <tbody>
@@ -286,12 +286,12 @@
                                     {% endif %}
                                 </td>
                                 <td>{{ transaction.order_id.id }}-{{ transaction.get_transaction_type_display }}</td>
-                                <td>
-                                    <form method="post" action="{% url 'soft_delete_transaction' transaction.id %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-warning btn-sm">Soft Delete</button>
-                                    </form>
-                                </td>
+<!--                                <td>-->
+<!--                                    <form method="post" action="{% url 'soft_delete_transaction' transaction.id %}">-->
+<!--                                        {% csrf_token %}-->
+<!--                                        <button type="submit" class="btn btn-warning btn-sm">Soft Delete</button>-->
+<!--                                    </form>-->
+<!--                                </td>-->
                             </tr>
                             {% endfor %}
                         </tbody>

@@ -2,12 +2,14 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
 from django.utils.text import slugify
+from django.views.decorators.cache import cache_control
+
 from .models import Category, Brand,Product,ProductVariant,ProductImage,Banner,Color
 from Cartapp.models import WishListItem
 from decimal import Decimal
 import math
 from decimal import Decimal, ROUND_HALF_UP
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def home(request):
     categories = Category.objects.filter(is_active=True)
     brands = Brand.objects.filter(is_active=True)

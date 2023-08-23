@@ -21,8 +21,10 @@ from django.core.exceptions import ValidationError
 from Cartapp.models import Cart, CartItem
 
 
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def signin(request):
+    if 'username' in request.session:
+        return redirect('home')
     if request.method == 'POST':
         username_or_email = request.POST['username_or_email']
 
@@ -65,6 +67,7 @@ def signin(request):
             return redirect('signin')
 
     return render(request, 'signin.html')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def otp_verification(request):
     if request.method == 'POST':
         otp = request.POST.get('otp')
@@ -135,7 +138,12 @@ def signup(request):
         phone_number = request.POST['phone_number']
         pass1 = request.POST['password']
         cpassword = request.POST['cpassword']
-
+        if ' ' in username:
+            messages.error(request, 'Username cannot contain spaces')
+            return redirect('signup')
+        if len(username) > 15:
+            messages.error(request, 'Username cannot exceed 15 characters')
+            return redirect('signup')
         if pass1 != cpassword:
             messages.error(request, 'Passwords do not match')
             return redirect('signup')
@@ -187,6 +195,7 @@ def signup(request):
         return redirect('verification_mail_sent')
 
     return render(request, 'signup.html')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def verify_email(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -230,11 +239,13 @@ def verify_email(request, uidb64, token):
     return render(request, 'verification_failed.html')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def logout_view(request):
+    if 'username' in request.session:
+        request.session.flush()
     if request.user.is_authenticated:
-
-        # User is logged in, perform logout
         logout(request)
     return redirect('/')
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def verification_mail_sent(requset):
     return render(requset,'verification_mail_sent.html')
 
@@ -321,6 +332,7 @@ def reset_password(request):
 def password_reset_success(request):
 
     return render(request,'pwresetsuccess.html')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def password_login(request):
     if 'username' in request.session:
         return redirect('home')

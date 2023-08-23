@@ -406,15 +406,18 @@ def add_coupon(request):
 
         try:
             discount = float(discount)
-            valid_from = make_aware(timezone.datetime.strptime(valid_from, '%Y-%m-%d'))
-            valid_to = make_aware(timezone.datetime.strptime(valid_to, '%Y-%m-%d')) if valid_to else None
+            valid_from = timezone.make_aware(timezone.datetime.strptime(valid_from, '%Y-%m-%d'))
+            valid_to = timezone.make_aware(timezone.datetime.strptime(valid_to, '%Y-%m-%d')) if valid_to else None
             quantity = int(quantity)
         except (ValueError, TypeError):
             return render(request, 'add_coupon.html', {'error': 'Invalid data format.'})
 
         now = timezone.now()
-        if  (valid_to and valid_to < now):
-            return render(request, 'add_coupon.html', {'error': 'Valid from and valid to dates must be in the future.'})
+        if valid_from < now:
+            return render(request, 'add_coupon.html', {'error': 'Valid from date must be in the future.'})
+
+        if valid_from >= now and (valid_to and valid_to < now):
+            return render(request, 'add_coupon.html', {'error': 'Valid to date must be in the future.'})
 
         if valid_to and valid_from >= valid_to:
             return render(request, 'add_coupon.html', {'error': 'Valid from date must be before valid to date.'})

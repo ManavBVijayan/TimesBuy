@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -136,20 +137,20 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # Replace with yo
 # SMTP Settings
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = config('EMAIL_HOST')
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'timesbuyeshop@gmail.com'  # Replace with your Gmail address
-EMAIL_HOST_PASSWORD = 'bdfmvvokblsolpur'  # Replace with your Gmail password or app password
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')  # Replace with your Gmail address
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD') # Replace with your Gmail password or app password
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
-RAZOR_KEY_ID='rzp_test_98XGYT9co5eC5l'
-RAZOR_KEY_SECRET='b46k91t5lEgC2CP5XXM5DHUA'
+RAZOR_KEY_ID = config('RAZOR_KEY_ID')
+RAZOR_KEY_SECRET = config('RAZOR_KEY_SECRET')
 
-TWILIO_ACCOUNT_SID='ACab4eac82fd92250f10aeb7c6f4ec8f75'
-TWILIO_AUTH_TOKEN='a00c267353f3d42ee9aad9fae3c0d755'
-TWILIO_PHONE_NUMBER='+13135138891'
+TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN')
+TWILIO_PHONE_NUMBER = config('TWILIO_PHONE_NUMBER')
 
 
 
