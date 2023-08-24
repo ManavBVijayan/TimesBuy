@@ -87,7 +87,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'timesbuyfinaldb',
         'USER': 'postgres',
-        'PASSWORD' : 'manav12',
+        'PASSWORD' : '*****',
         'HOST' : 'localhost',
     }
 }
